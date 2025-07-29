@@ -1,0 +1,83 @@
+from dataclasses import dataclass
+from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice
+
+class StartingCharacter(Choice):
+    """
+    Determines which character you start the game with.
+    """
+    display_name = "Starting Character"
+    option_shovel_knight = 0
+    option_black_knight = 1
+    option_shield_knight = 2
+    option_king_knight = 3
+    option_specter_knight = 4
+    option_plague_knight = 5
+    option_mole_knight = 6
+    option_treasure_knight = 7
+    option_tinker_knight = 8
+    option_polar_knight = 9
+    option_propeller_knight = 10
+    option_scrap_knight = 11
+    option_prism_knight = 12
+    option_puzzle_knight = 13
+    option_mona = 14
+    option_chester = 15
+    option_enchantress = 16
+    option_quandary_sage = 17
+    option_spinwulf = 18
+    option_schmutz = 19
+    option_beefto = 20
+    default = 0
+
+class HubShopRestockCount(Range):
+    """
+    The amount of shop restock items will be shuffled into the itempool.
+    Each restock adds 6 extra locations.
+    """
+    display_name = "Chester Camp Shop Restocks"
+    range_start = 10
+    range_end = 20
+    default = 10
+
+class DoProgressiveDungeons(Toggle):
+    """
+    Shuffles progressive dungeon items into the itempool.
+    Adds a hard cap on how far the player can progress based on the amount of progressive dungeon items they posess.
+    """
+    display_name = "Enable Progressive Dungeons"
+
+class DungeonStartAmount(Range):
+    """
+    How many progressive dungeon items the player starts with, helps with preventing a restrictive start.
+    Only takes effect if progressive dungeons is turned on.
+    """
+    display_name = "Starting Dungeons Amount"
+    range_start = 0
+    range_end = 8
+    default = 2
+
+class EnableHats(Toggle):
+    """
+    Shuffles all hats into the itempool.
+    If turned off Almond and Souffle will still be added to the pool.
+    """
+    display_name = "Enable Hats"
+
+class TrapFillPercent(Range):
+    """
+    The percentage of filler itemslots that will be replaced by traps.
+    """
+    display_name = "Trap Fill Percentage"
+    range_start = 0
+    range_end = 100
+    default = 40
+
+@dataclass
+class SKPDOptions(PerGameCommonOptions):
+    starting_character: StartingCharacter
+    hub_shop_restock_count: HubShopRestockCount
+    do_progressive_dungeons: DoProgressiveDungeons
+    dungeon_start_amount: DungeonStartAmount
+    enable_hats: EnableHats
+    trap_fill_percent: TrapFillPercent
+    death_link: DeathLink
