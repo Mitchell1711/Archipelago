@@ -17,7 +17,7 @@ def get_item_from_category(category: str) -> list:
     return itemlist
 
 skpd_items: dict[str, SKPDItemData] = {
-    "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression),
+    "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression_skip_balancing),
     "Key Fragment":             SKPDItemData(102, "Progression", ItemClassification.progression),
     "Progressive Dungeon":      SKPDItemData(103, "Progression", ItemClassification.progression),
 

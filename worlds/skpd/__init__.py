@@ -53,7 +53,7 @@ class SKPDWorld(World):
                 self.push_precollected(self.create_item("Progressive Dungeon"))
         
         for character in get_item_from_category("Character"):
-            if character != self.options.starting_character:
+            if character != self.options.starting_character.value:
                 skpd_itempool.append(self.create_item(character))
             else:
                 self.push_precollected(self.create_item(character))
@@ -83,7 +83,7 @@ class SKPDWorld(World):
     
     def fill_slot_data(self) -> Mapping[str, Any]:
         return {
-            "StartingChar": int(self.options.starting_character.value),
+            "StartingChar": str(self.options.starting_character.value),
             "DeathLink": bool(self.options.death_link)
         }
     

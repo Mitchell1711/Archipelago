@@ -6,28 +6,28 @@ class StartingCharacter(Choice):
     Determines which character you start the game with.
     """
     display_name = "Starting Character"
-    option_shovel_knight = 0
-    option_black_knight = 1
-    option_shield_knight = 2
-    option_king_knight = 3
-    option_specter_knight = 4
-    option_plague_knight = 5
-    option_mole_knight = 6
-    option_treasure_knight = 7
-    option_tinker_knight = 8
-    option_polar_knight = 9
-    option_propeller_knight = 10
-    option_scrap_knight = 11
-    option_prism_knight = 12
-    option_puzzle_knight = 13
-    option_mona = 14
-    option_chester = 15
-    option_enchantress = 16
-    option_quandary_sage = 17
-    option_spinwulf = 18
-    option_schmutz = 19
-    option_beefto = 20
-    default = 0
+    option_shovel_knight = "Shovel Knight"
+    option_black_knight = "Black Knight"
+    option_shield_knight = "Shield Knight"
+    option_king_knight = "King Knight"
+    option_specter_knight = "Specter Knight"
+    option_plague_knight = "Plage Knight"
+    option_mole_knight = "Mole Knight"
+    option_treasure_knight = "Treasure Knight"
+    option_tinker_knight = "Tinker Knight"
+    option_polar_knight = "Polar Knight"
+    option_propeller_knight = "Propeller Knight"
+    option_scrap_knight = "Scrap Knight"
+    option_prism_knight = "Prism Knight"
+    option_puzzle_knight = "Puzzle Knight"
+    option_mona = "Mona"
+    option_chester = "Chester"
+    option_enchantress = "Enchantress"
+    option_quandary_sage = "Quandary Sage"
+    option_spinwulf = "Spinwulf"
+    option_schmutz = "Schmutz"
+    option_beefto = "Beefto"
+    default = "Shovel Knight"
 
 class HubShopRestockCount(Range):
     """
