@@ -38,10 +38,12 @@ def create_locations():
         "Shovel Knight Defeated":       SKPDLocationData(114, "Boss Defeated"),
         "Chester Defeated":             SKPDLocationData(115, "Boss Defeated"),
         "Mr. Hat Defeated":             SKPDLocationData(116, "Boss Defeated"),
-        "First Shrine":                 SKPDLocationData(117, "Shrine"),
-        "Second Shrine":                SKPDLocationData(118, "Shrine"),
-        "Third Shrine":                 SKPDLocationData(119, "Shrine"),
-        "Fourth Shrine":                SKPDLocationData(120, "Shrine"),
+        "Baz Defeated":                 SKPDLocationData(117, "Boss Defeated"),
+        "Reize Defeated":               SKPDLocationData(118, "Boss Defeated"),
+        "First Shrine":                 SKPDLocationData(125, "Shrine"),
+        "Second Shrine":                SKPDLocationData(126, "Shrine"),
+        "Third Shrine":                 SKPDLocationData(127, "Shrine"),
+        "Fourth Shrine":                SKPDLocationData(128, "Shrine"),
     })
     
     location_index = 200
