@@ -7,6 +7,19 @@ from .Regions import create_regions, dungeon_amount
 from .Options import SKPDOptions
 from .Rules import set_rules
 import math
+from multiprocessing import Process
+from worlds.LauncherComponents import Component, components, launch as launch_component, Type
+
+def run_client(*args: str):
+    print("Running Pocket Dungeon Client")
+    from .PocketDungeonClient import launch
+    launch_component(launch, name="SKPDClient", args=args)
+
+components.append(Component("Pocket Dungeon Client", "SKPDClient", func=run_client, component_type=Type.CLIENT))
+
+def data_path(file_name: str):
+    import pkgutil
+    return pkgutil.get_data(__name__, "data/" + file_name)
 
 class SKPDWeb(WebWorld):
     theme = "grass"
