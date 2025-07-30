@@ -18,7 +18,7 @@ class SKPDWorld(World):
     """
     game = "Shovel Knight Pocket Dungeon"
     web = SKPDWeb()
-    topology_present = True
+    topology_present = False
 
     options_dataclass = SKPDOptions
     options: SKPDOptions # type: ignore
