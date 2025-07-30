@@ -21,6 +21,8 @@ skpd_items: dict[str, SKPDItemData] = {
     "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression_skip_balancing),
     "Key Fragment":             SKPDItemData(102, "Progression", ItemClassification.progression),
     "Progressive Dungeon":      SKPDItemData(103, "Progression", ItemClassification.progression),
+    "Junk":                     SKPDItemData(291, "Filler", ItemClassification.trap),
+    "Gems":                     SKPDItemData(292, "Filler", ItemClassification.filler),
 
     "Shovel Knight":            SKPDItemData(104, "Character", ItemClassification.progression),
     "King Knight":              SKPDItemData(105, "Character", ItemClassification.progression),
@@ -211,7 +213,4 @@ skpd_items: dict[str, SKPDItemData] = {
     "Helm of Adaptation":       SKPDItemData(288, "Hat", ItemClassification.filler),
     "Entrepreneurs' Lid":       SKPDItemData(289, "Hat", ItemClassification.filler),
     "Skullcap of Fate":         SKPDItemData(290, "Hat", ItemClassification.filler),
-
-    "Junk":                     SKPDItemData(291, "Filler", ItemClassification.trap),
-    "Gems":                     SKPDItemData(292, "Filler", ItemClassification.filler)
 }

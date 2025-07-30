@@ -35,11 +35,11 @@ class HubShopRestockCount(Range):
     Each restock adds 6 extra locations.
     """
     display_name = "Chester Camp Shop Restocks"
-    range_start = 10
+    range_start = 5
     range_end = 20
     default = 10
 
-class DoProgressiveDungeons(Toggle):
+class DoProgressiveDungeons(DefaultOnToggle):
     """
     Shuffles progressive dungeon items into the itempool.
     Adds a hard cap on how far the player can progress based on the amount of progressive dungeon items they posess.

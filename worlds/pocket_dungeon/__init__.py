@@ -86,4 +86,3 @@ class SKPDWorld(World):
             "StartingChar": str(self.options.starting_character.value),
             "DeathLink": bool(self.options.death_link)
         }
-    
