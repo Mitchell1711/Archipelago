@@ -3,8 +3,9 @@ from ..generic.Rules import add_rule, set_rule
 from .Regions import connect_regions, dungeon_amount
 from .Locations import skpd_locations
 from .Items import get_item_from_category, skpd_items
+from .Options import SKPDOptions
 
-def set_rules(world: MultiWorld, player: int):
+def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     #connect regions together
     connect_regions(world, player, "Menu", "Camp", None)
     connect_regions(world, player, "Camp", "Castle Quandary", 
@@ -18,7 +19,8 @@ def set_rules(world: MultiWorld, player: int):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}", lambda state, amount=i+1: state.has("Progressive Dungeon", player, amount))
         add_rule(dungeon_connection, lambda state, quality=i+1: relic_logic(state, player, relics, quality))
     
-    connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: relic_logic(state, player, relics, 9))
+    dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: state.has("Progressive Dungeon", player, 9))
+    add_rule(dungeon_connection, lambda state: relic_logic(state, player, relics, 9))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
@@ -34,6 +36,12 @@ def set_rules(world: MultiWorld, player: int):
         elif skpd_locations[location.name].category == "Dungeon Shop":
             character = skpd_locations[location.name].data
             add_rule(location, lambda state, char=character: state.has(char, player))
+            #add refract characters if enabled
+            if options.shuffle_refract_characters:
+                refract_char = f"{character} B"
+                if refract_char in skpd_items:
+                    add_rule(location, lambda state, char=refract_char: state.has(char, player), "or")
+            #random and shuffle knight require their respective hats to be played on their own
             if character == "Random Knight":
                 add_rule(location, lambda state: state.has("Almond", player))
             elif character == "Shuffle Knight":

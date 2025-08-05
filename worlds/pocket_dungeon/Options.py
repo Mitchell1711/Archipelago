@@ -29,6 +29,12 @@ class StartingCharacter(Choice):
     option_beefto = "Beefto"
     default = "Shovel Knight"
 
+class ShuffleRefractCharacters(DefaultOnToggle):
+    """
+    Shuffles the refract variants of all characters into the itempool.
+    """
+    display_name = "Shuffle Refract Characters"
+
 class HubShopRestockCount(Range):
     """
     The amount of shop restock items will be shuffled into the itempool.
@@ -72,12 +78,21 @@ class TrapFillPercent(Range):
     range_end = 100
     default = 40
 
+class RandomizeLevelOrder(Toggle):
+    """
+    Shuffles around level themes, does not have an effect on logic.
+    Different from the "shuffle all" in-game option as the level shuffle will be unique to each Archipelago world.
+    """
+    display_name = "Randomize Level Order"
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
+    shuffle_refract_characters: ShuffleRefractCharacters
     hub_shop_restock_count: HubShopRestockCount
     do_progressive_dungeons: DoProgressiveDungeons
     dungeon_start_amount: DungeonStartAmount
+    randomize_level_order: RandomizeLevelOrder
     enable_hats: EnableHats
     trap_fill_percent: TrapFillPercent
     death_link: DeathLink

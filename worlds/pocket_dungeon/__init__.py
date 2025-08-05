@@ -7,7 +7,6 @@ from .Regions import create_regions, dungeon_amount
 from .Options import SKPDOptions
 from .Rules import set_rules
 import math
-from multiprocessing import Process
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
 
 def run_client(*args: str):
@@ -48,7 +47,7 @@ class SKPDWorld(World):
         return SKPDItem(name, data.classification, data.code, self.player)
     
     def set_rules(self) -> None:
-        set_rules(self.multiworld, self.player)
+        set_rules(self.multiworld, self.player, self.options)
         self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Enchantress Defeated", self.player)
     
     def create_items(self) -> None:
@@ -71,6 +70,10 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(character))
         
+        if self.options.shuffle_refract_characters:
+            for refract_character in get_item_from_category("Refract Character"):
+                skpd_itempool.append(self.create_item(refract_character))
+        
         for relic in get_item_from_category("Relic"):
             skpd_itempool.append(self.create_item(relic))
         
@@ -90,12 +93,39 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("Gems"))
 
         self.multiworld.itempool += skpd_itempool
+    
+    def shuffle_levels(self):
+        levelorder = [[], [], []]
+        levels = [
+            "plains",
+            "pridemoor keep",
+            "lich yard",
+            "magic landfill",
+            "iron whale",
+            "crystal caverns",
+            "clockwork tower",
+            "stranded ship",
+            "flying machine",
+            "explodatorium",
+            "lost city"
+        ]
+        
+        for i in range(3):
+            levelorder[0].append(levels.pop(self.random.randint(0, len(levels))))
+        for i in range(4): 
+            levelorder[1].append(levels.pop(self.random.randint(0, len(levels))))
+            levelorder[2].append(levels.pop(self.random.randint(0, len(levels))))
+        return levelorder
 
     def get_filler_item_name(self) -> str:
         return "Gems"
     
     def fill_slot_data(self) -> Mapping[str, Any]:
+        levelorder = []
+        if self.options.randomize_level_order:
+            levelorder = self.shuffle_levels()
         return {
             "StartingChar": str(self.options.starting_character.value),
-            "DeathLink": bool(self.options.death_link)
+            "DeathLink": bool(self.options.death_link),
+            "RandomizeLevelOrder": levelorder
         }

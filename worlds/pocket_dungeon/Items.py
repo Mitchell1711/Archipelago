@@ -18,7 +18,7 @@ def get_item_from_category(category: str) -> list:
     return itemlist
 
 skpd_items: dict[str, SKPDItemData] = {
-    "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression_skip_balancing),
+    "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression),
     "Key Fragment":             SKPDItemData(102, "Progression", ItemClassification.progression),
     "Progressive Dungeon":      SKPDItemData(103, "Progression", ItemClassification.progression),
     "Junk":                     SKPDItemData(291, "Filler", ItemClassification.trap),
@@ -47,6 +47,25 @@ skpd_items: dict[str, SKPDItemData] = {
     "Beefto":                   SKPDItemData(124, "Character", ItemClassification.progression),
     "Shuffle Knight":           SKPDItemData(125, "Character", ItemClassification.progression),
     "Random Knight":            SKPDItemData(126, "Character", ItemClassification.progression),
+
+    "Shovel Knight B":          SKPDItemData(350, "Refract Character", ItemClassification.progression),
+    "King Knight B":            SKPDItemData(351, "Refract Character", ItemClassification.progression),
+    "Specter Knight B":         SKPDItemData(352, "Refract Character", ItemClassification.progression),
+    "Plague Knight B":          SKPDItemData(353, "Refract Character", ItemClassification.progression),
+    "Mole Knight B":            SKPDItemData(354, "Refract Character", ItemClassification.progression),
+    "Treasure Knight B":        SKPDItemData(355, "Refract Character", ItemClassification.progression),
+    "Tinker Knight B":          SKPDItemData(356, "Refract Character", ItemClassification.progression),
+    "Polar Knight B":           SKPDItemData(357, "Refract Character", ItemClassification.progression),
+    "Propeller Knight B":       SKPDItemData(358, "Refract Character", ItemClassification.progression),
+    "Scrap Knight B":           SKPDItemData(359, "Refract Character", ItemClassification.progression),
+    "Prism Knight B":           SKPDItemData(360, "Refract Character", ItemClassification.progression),
+    "Puzzle Knight B":          SKPDItemData(361, "Refract Character", ItemClassification.progression),
+    "Black Knight B":           SKPDItemData(362, "Refract Character", ItemClassification.progression),
+    "Shield Knight B":          SKPDItemData(363, "Refract Character", ItemClassification.progression),
+    "Mona B":                   SKPDItemData(364, "Refract Character", ItemClassification.progression),
+    "Chester B":                SKPDItemData(365, "Refract Character", ItemClassification.progression),
+    "Enchantress B":            SKPDItemData(366, "Refract Character", ItemClassification.progression),
+    "Shuffle Knight B":         SKPDItemData(367, "Refract Character", ItemClassification.progression),
 
     "Meal Ticket":              SKPDItemData(127, "Relic", ItemClassification.progression, 1),
     "Premium Meal Ticket":      SKPDItemData(128, "Relic", ItemClassification.progression, 2),
@@ -213,4 +232,26 @@ skpd_items: dict[str, SKPDItemData] = {
     "Helm of Adaptation":       SKPDItemData(288, "Hat", ItemClassification.filler),
     "Entrepreneurs' Lid":       SKPDItemData(289, "Hat", ItemClassification.filler),
     "Skullcap of Fate":         SKPDItemData(290, "Hat", ItemClassification.filler),
+
+    # Might get added later?
+    # "Progressive Blade":        SKPDItemData(300, "Item", ItemClassification.progression), #blade can be upgraded to steel and hero blade
+    # "Progressive Spear":        SKPDItemData(301, "Item", ItemClassification.progression), #spear can be upgraded to super spear
+    # "Zap Wand":                 SKPDItemData(302, "Item", ItemClassification.progression),
+    # "Smoke Bomb":               SKPDItemData(303, "Item", ItemClassification.progression),
+    # "War Horn":                 SKPDItemData(304, "Item", ItemClassification.progression),
+    # "Red Troupple Chalice":     SKPDItemData(305, "Item", ItemClassification.progression),
+    # "Blue Troupple Chalice":    SKPDItemData(306, "Item", ItemClassification.progression),
+    # "Wildcard":                 SKPDItemData(307, "Item", ItemClassification.progression),
+    # "Chronos Coin":             SKPDItemData(308, "Item", ItemClassification.progression),
+    # "Ice Axe":                  SKPDItemData(309, "Item", ItemClassification.progression),
+    # "Fire Axe":                 SKPDItemData(310, "Item", ItemClassification.progression),
+    # "Shield":                   SKPDItemData(311, "Item", ItemClassification.progression),
+    # "Glitzemizer":              SKPDItemData(312, "Item", ItemClassification.progression),
+    # "Anchor":                   SKPDItemData(313, "Item", ItemClassification.progression),
+    # "Copycard":                 SKPDItemData(314, "Item", ItemClassification.progression),
+    # "Morphy Wand":              SKPDItemData(315, "Item", ItemClassification.progression),
+    # "Poison Dagger":            SKPDItemData(316, "Item", ItemClassification.progression),
+    # "Flipwand":                 SKPDItemData(317, "Item", ItemClassification.progression),
+    # "Sploder X":                SKPDItemData(318, "Item", ItemClassification.progression),
+    # "Sploder +":                SKPDItemData(319, "Item", ItemClassification.progression),
 }
