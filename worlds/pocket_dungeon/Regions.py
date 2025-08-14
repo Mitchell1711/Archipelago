@@ -3,7 +3,7 @@ from .Locations import SKPDLocation, skpd_locations, get_location_from_category
 from typing import Callable, Optional
 from .Options import SKPDOptions
 
-dungeon_amount = 9
+dungeon_amount = 10
 
 def create_regions(world: MultiWorld, player: int, options: SKPDOptions):
     boss_table = [

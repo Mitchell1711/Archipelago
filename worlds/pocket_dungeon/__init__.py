@@ -88,9 +88,9 @@ class SKPDWorld(World):
         total_filler = locations_to_fill - len(skpd_itempool)
         traps_to_place = math.floor(total_filler * (self.options.trap_fill_percent / 100))
         for i in range(traps_to_place):
-            skpd_itempool.append(self.create_item("Junk"))
+            skpd_itempool.append(self.create_item("Garbage"))
         for i in range(total_filler - traps_to_place):
-            skpd_itempool.append(self.create_item("Gems"))
+            skpd_itempool.append(self.create_item("1000 Gems"))
 
         self.multiworld.itempool += skpd_itempool
     
@@ -118,7 +118,7 @@ class SKPDWorld(World):
         return levelorder
 
     def get_filler_item_name(self) -> str:
-        return "Gems"
+        return "1000 Gems"
     
     def fill_slot_data(self) -> Mapping[str, Any]:
         levelorder = []

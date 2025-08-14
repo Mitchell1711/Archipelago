@@ -61,7 +61,6 @@ def create_locations():
     
     #add dungeon shop locations, each character has an unique location
     characters = get_item_from_category("Character")
-    print(characters)
 
     for i in range(8):
         location_index = add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters, location_index)
