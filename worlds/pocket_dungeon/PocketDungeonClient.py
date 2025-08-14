@@ -15,8 +15,8 @@ class SKPDCommandProcessor(ClientCommandProcessor):
     def _cmd_savepath(self, directory: str):
         """Change the directory where your savefile is located"""
         if isinstance(self.ctx, SKPDContext):
-            self.ctx.save_game_folder = directory
-            self.output("Changed to the following directory: " + self.ctx.save_game_folder)
+            self.ctx.game_folder = directory
+            self.output("Changed to the following directory: " + self.ctx.game_folder)
     
 class SKPDContext(CommonContext):
     game = "Shovel Knight Pocket Dungeon"
