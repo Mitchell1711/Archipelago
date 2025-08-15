@@ -36,10 +36,10 @@ class SKPDWorld(World):
     options: SKPDOptions # type: ignore
 
     item_name_to_id = {name: data.code for name, data in skpd_items.items()}
+    create_locations()
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
     
     def create_regions(self) -> None:
-        create_locations()
         create_regions(self.multiworld, self.player, self.options)
     
     def create_item(self, name: str) -> Item:

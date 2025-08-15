@@ -1,7 +1,8 @@
 import asyncio
-from Utils import async_start
+from Utils import open_directory, open_file, async_start
 from NetUtils import NetworkItem, ClientStatus
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg
+from worlds import network_data_package
 import logging
 import sys
 import os
@@ -12,10 +13,10 @@ class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
         super().__init__(ctx)
     
-    def _cmd_savepath(self, directory: str):
+    def _cmd_savepath(self):
         """Change the directory where your savefile is located"""
         if isinstance(self.ctx, SKPDContext):
-            self.ctx.game_folder = directory
+            open_directory("Save Path", self.ctx.game_folder)
             self.output("Changed to the following directory: " + self.ctx.game_folder)
     
 class SKPDContext(CommonContext):
@@ -32,8 +33,11 @@ class SKPDContext(CommonContext):
         self.server_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_packets.txt")
         self.client_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_packets.txt")
         self.server_packets = 0
+        self.client_packets = 0
+        self.client_data = {}
         self.apsession = ""
         self.curr_seed = ""
+        self.loc_name_to_id = network_data_package["games"][self.game]["location_name_to_id"] # type: ignore
 
         #load in default savedata
         self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
@@ -64,7 +68,7 @@ class SKPDContext(CommonContext):
         process_package(self, cmd, args)
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
-    print(args)
+    #print(args)
     if cmd == "RoomInfo":
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
@@ -91,8 +95,6 @@ def handle_savedata(ctx: SKPDContext, args: dict):
     #reset communication files
     with open(ctx.server_file, "w") as file:
         json.dump({"slot_data": args["slot_data"]}, file)
-    with open(ctx.client_file, "w") as file:
-        file.write("{}")
     
     #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
@@ -146,12 +148,40 @@ def backup_savedata(ctx: SKPDContext) -> bool:
         return True
     return False
 
+async def game_watcher(ctx: SKPDContext):
+    while not ctx.exit_event.is_set():
+        #check for updates
+        with open(ctx.client_packets_file, "r") as file:
+            curr_packets = int(file.read())
+        if ctx.client_packets != curr_packets:
+            ctx.client_packets = curr_packets
+            with open(ctx.client_file, "r") as file:
+                cli_data = json.load(file)
+                #dont check data if ap sessions dont match
+                if(cli_data["ap_session"] != ctx.apsession):
+                    await asyncio.sleep(0.1)
+                
+                #send checked locations
+                if("checked_locations" in cli_data and cli_data["checked_locations"] != ctx.client_data):
+                    checked_locations = []
+                    for loc in cli_data["checked_locations"]:
+                        checked_locations.append(ctx.loc_name_to_id[loc])
+                    await ctx.send_msgs([{
+                        "cmd": "LocationChecks",
+                        "locations": checked_locations
+                    }])
+                #update local client data
+                ctx.client_data = cli_data
+        
+        await asyncio.sleep(0.1)
+
 def launch(*args):
     async def _main(args):
         parser = get_base_parser()
         args = parser.parse_args(args)
         ctx = SKPDContext(args.connect, args.password)
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
+        asyncio.create_task(game_watcher(ctx), name="SKPDGameWatcher")
 
         if gui_enabled:
             ctx.run_gui()

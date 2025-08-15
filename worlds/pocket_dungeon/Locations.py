@@ -57,7 +57,7 @@ def create_locations():
             item = j+1
             skpd_locations.update({f"Chester Camp Shop - Stock {stock} - Item {item}": 
                                 SKPDLocationData(location_index, "Chester Camp Shop", stock)})
-        location_index += 1
+            location_index += 1
     
     #add dungeon shop locations, each character has an unique location
     characters = get_item_from_category("Character")
