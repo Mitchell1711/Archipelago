@@ -35,6 +35,7 @@ class SKPDContext(CommonContext):
         self.server_packets = 0
         self.client_packets = 0
         self.client_data = {}
+        self.hint_data = []
         self.apsession = ""
         self.curr_seed = ""
         self.loc_name_to_id = network_data_package["games"][self.game]["location_name_to_id"] # type: ignore
@@ -76,14 +77,28 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
     elif cmd == "ReceivedItems":
         with open(ctx.server_file, "r") as file:
             data = json.load(file)
-            if "received_items" not in data:
-                data["received_items"] = []
+            if "ReceivedItems" not in data:
+                data["ReceivedItems"] = []
             for item in args["items"]:
-                data["received_items"].append({
+                data["ReceivedItems"].append({
                     "item": ctx.item_names.lookup_in_game(item.item),
                     "player": ctx.player_names[item.player]
                 })
             data["item_index"] = args["index"]
+        with open(ctx.server_file, "w") as file:
+            json.dump(data, file)
+    elif cmd == "LocationInfo":
+        with open(ctx.server_file, "r") as file:
+            data = json.load(file)
+            if "LocationInfo" not in data:
+                data["LocationInfo"] = []
+            for loc in args["locations"]:
+                data["LocationInfo"].append({
+                    "item": ctx.item_names.lookup_in_game(loc.item, ctx.slot_info[loc.player].game),
+                    "location": ctx.location_names.lookup_in_game(loc.location),
+                    "player": ctx.player_names[loc.player],
+                    "flags": loc.flags
+                })
         with open(ctx.server_file, "w") as file:
             json.dump(data, file)
     
@@ -158,21 +173,60 @@ async def game_watcher(ctx: SKPDContext):
             with open(ctx.client_file, "r") as file:
                 cli_data = json.load(file)
                 #dont check data if ap sessions dont match
-                if(cli_data["ap_session"] != ctx.apsession):
-                    await asyncio.sleep(0.1)
+            if(cli_data["ap_session"] != ctx.apsession):
+                await asyncio.sleep(0.1)
+                continue
                 
-                #send checked locations
-                if("checked_locations" in cli_data and cli_data["checked_locations"] != ctx.client_data):
-                    checked_locations = []
-                    for loc in cli_data["checked_locations"]:
-                        checked_locations.append(ctx.loc_name_to_id[loc])
-                    await ctx.send_msgs([{
-                        "cmd": "LocationChecks",
-                        "locations": checked_locations
-                    }])
-                #update local client data
-                ctx.client_data = cli_data
-        
+            packet = []
+            #send checked locations
+            if("LocationChecks" in cli_data and cli_data["LocationChecks"] != ctx.client_data):
+                checked_locations = []
+                for loc in cli_data["LocationChecks"]:
+                    checked_locations.append(ctx.loc_name_to_id[loc])
+                packet.append({
+                    "cmd": "LocationChecks",
+                    "locations": checked_locations
+                })
+            #send locationscount request
+            if("LocationScouts" in cli_data and cli_data["LocationScouts"] != ctx.client_data):
+                location_scouts = []
+                if f"_read_hints_{ctx.team}_{ctx.slot}" in ctx.stored_data:
+                    hintdata = ctx.stored_data[f"_read_hints_{ctx.team}_{ctx.slot}"]
+                else:
+                    hintdata = []
+                for loc in cli_data["LocationScouts"]:
+                    #check if hint is already present in hintdata
+                    send_scout_packet = True
+                    for hint in hintdata:
+                        if ctx.loc_name_to_id[loc] == hint["location"]:
+                            with open(ctx.server_file, "r") as file:
+                                data = json.load(file)
+                                if "LocationInfo" not in data:
+                                    data["LocationInfo"] = []
+                                for hint in hintdata:
+                                    if(hint["finding_player"] == ctx.slot):
+                                        data["LocationInfo"].append({
+                                            "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
+                                            "location": ctx.location_names.lookup_in_game(hint["location"]),
+                                            "player": ctx.player_names[hint["receiving_player"]],
+                                            "flags": hint["item_flags"]
+                                        })
+                                with open(ctx.server_file, "w") as file:
+                                    json.dump(data, file)
+                            send_scout_packet = False
+                    #else add a location scouts packet
+                    if send_scout_packet:
+                        location_scouts.append(ctx.loc_name_to_id[loc])
+                packet.append({
+                    "cmd": "LocationScouts",
+                    "locations": location_scouts,
+                    "create_as_hint": 1
+                })
+            #send packet if not empty
+            if packet:
+                await ctx.send_msgs(packet)
+            #update local client data
+            ctx.client_data = cli_data
         await asyncio.sleep(0.1)
 
 def launch(*args):
