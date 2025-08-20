@@ -49,7 +49,7 @@ def create_locations():
     location_index = 200
 
     #add chester camp upgrade locations
-    stock_size = 6
+    stock_size = 5
     max_restocks = 20
     for i in range(max_restocks):
         stock = i+1
@@ -69,6 +69,7 @@ def create_locations():
 
 def add_dungeon_shop_locations(location: str, characters: list, location_index: int) -> int:
     for character in characters:
-        skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, "Dungeon Shop", character)})
-        location_index += 1
+        if(character != "Quandary Sage"):
+            skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, "Dungeon Shop", character)})
+            location_index += 1
     return location_index

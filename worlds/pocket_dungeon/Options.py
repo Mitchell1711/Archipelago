@@ -1,32 +1,12 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice
+from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice, OptionSet, FreeText
 
-class StartingCharacter(Choice):
+class StartingCharacter(FreeText):
     """
     Determines which character you start the game with.
+    Refract characters use their name + B (eg. Shovel Knight B)
     """
     display_name = "Starting Character"
-    option_shovel_knight = "Shovel Knight"
-    option_black_knight = "Black Knight"
-    option_shield_knight = "Shield Knight"
-    option_king_knight = "King Knight"
-    option_specter_knight = "Specter Knight"
-    option_plague_knight = "Plage Knight"
-    option_mole_knight = "Mole Knight"
-    option_treasure_knight = "Treasure Knight"
-    option_tinker_knight = "Tinker Knight"
-    option_polar_knight = "Polar Knight"
-    option_propeller_knight = "Propeller Knight"
-    option_scrap_knight = "Scrap Knight"
-    option_prism_knight = "Prism Knight"
-    option_puzzle_knight = "Puzzle Knight"
-    option_mona = "Mona"
-    option_chester = "Chester"
-    option_enchantress = "Enchantress"
-    option_quandary_sage = "Quandary Sage"
-    option_spinwulf = "Spinwulf"
-    option_schmutz = "Schmutz"
-    option_beefto = "Beefto"
     default = "Shovel Knight"
 
 class ShuffleRefractCharacters(DefaultOnToggle):
@@ -38,29 +18,25 @@ class ShuffleRefractCharacters(DefaultOnToggle):
 class HubShopRestockCount(Range):
     """
     The amount of shop restock items will be shuffled into the itempool.
-    Each restock adds 6 extra locations.
+    Each restock adds 5 extra locations.
     """
     display_name = "Chester Camp Shop Restocks"
     range_start = 5
     range_end = 20
     default = 10
 
-class DoProgressiveDungeons(DefaultOnToggle):
+class ProgressionType(Choice):
     """
-    Shuffles progressive dungeon items into the itempool.
-    Adds a hard cap on how far the player can progress based on the amount of progressive dungeon items they posess.
+    How to handle game progression.
+    Progressive Dungeons: adds a hard cap on how far the player can progress based on the amount of progressive dungeon items they posess.
+    Key Hunt: Keys stop spawning inside of levels and will be shuffled into the multiworld, each run starts with your amount of collected keys.
+    None: Progression logic is only based on the amount of relics you've collected, there's no hard cap on how far you can get in a run.
     """
-    display_name = "Enable Progressive Dungeons"
-
-class DungeonStartAmount(Range):
-    """
-    How many progressive dungeon items the player starts with, helps with preventing a restrictive start.
-    Only takes effect if progressive dungeons is turned on.
-    """
-    display_name = "Starting Dungeons Amount"
-    range_start = 0
-    range_end = 8
-    default = 2
+    display_name = "Progression Type"
+    option_progressive_dungeons = 0
+    option_key_hunt = 1
+    option_none = 2
+    default = 0
 
 class EnableHats(Toggle):
     """
@@ -85,14 +61,22 @@ class RandomizeLevelOrder(Toggle):
     """
     display_name = "Randomize Level Order"
 
+class ModdedLevels(OptionSet):
+    """
+    Add level ids for any modded levels you may want to include in the level shuffle.
+    This doesn't need to be set if randomize level order is disabled.
+    """
+    display_name = "Modded Levels"
+    default = {}
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
     shuffle_refract_characters: ShuffleRefractCharacters
     hub_shop_restock_count: HubShopRestockCount
-    do_progressive_dungeons: DoProgressiveDungeons
-    dungeon_start_amount: DungeonStartAmount
+    progression_type: ProgressionType
     randomize_level_order: RandomizeLevelOrder
+    modded_levels: ModdedLevels
     enable_hats: EnableHats
     trap_fill_percent: TrapFillPercent
     death_link: DeathLink

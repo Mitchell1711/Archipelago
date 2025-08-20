@@ -58,17 +58,21 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("Key Fragment"))
         for i in range(self.options.hub_shop_restock_count):
             skpd_itempool.append(self.create_item("Shop Restock"))
-        for i in range(dungeon_amount - 1):
-            if self.options.do_progressive_dungeons and self.options.dungeon_start_amount < i:
+        for i in range(3):
+            if self.options.progression_type == 0:
                 skpd_itempool.append(self.create_item("Progressive Dungeon"))
             else:
                 self.push_precollected(self.create_item("Progressive Dungeon"))
         
+        found_starting_char = False
         for character in get_item_from_category("Character"):
             if character != self.options.starting_character.value:
                 skpd_itempool.append(self.create_item(character))
+                found_starting_char = True
             else:
                 self.push_precollected(self.create_item(character))
+        if not found_starting_char:
+            raise Exception("[Shovel Knight Pocket Dungeon] Couldn't find starting character, please check if the .yaml is correct.")
         
         if self.options.shuffle_refract_characters:
             for refract_character in get_item_from_category("Refract Character"):
@@ -80,10 +84,11 @@ class SKPDWorld(World):
         if self.options.enable_hats:
             for hat in get_item_from_category("Hat"):
                 skpd_itempool.append(self.create_item(hat))
-        else:
+        #deprecated since shuffle/random aren't part of the pool anymore
+        # else:
             #these are progression items so shuffle and random knight can get their checks
-            skpd_itempool.append(self.create_item("Almond"))
-            skpd_itempool.append(self.create_item("Souffle"))
+            # skpd_itempool.append(self.create_item("Almond"))
+            # skpd_itempool.append(self.create_item("Souffle"))
         
         total_filler = locations_to_fill - len(skpd_itempool)
         traps_to_place = math.floor(total_filler * (self.options.trap_fill_percent / 100))
@@ -93,6 +98,16 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("1000 Gems"))
 
         self.multiworld.itempool += skpd_itempool
+    
+    def partition_even(self, count: int, to_divide: int) -> list:
+        lst = []
+        loop = to_divide - 1
+        for i in range(loop):
+            lst.append(math.floor(count * (1 / to_divide)))
+            count = math.ceil(count * ((to_divide - 1) / to_divide))
+            to_divide -= 1
+        lst.append(count)
+        return lst
     
     def shuffle_levels(self):
         levelorder = [[], [], []]
@@ -109,12 +124,14 @@ class SKPDWorld(World):
             "explodatorium",
             "lost city"
         ]
+
+        levels += self.options.modded_levels.value
         
+        ranges = self.partition_even(len(levels), 3)
         for i in range(3):
-            levelorder[0].append(levels.pop(self.random.randint(0, len(levels))))
-        for i in range(4): 
-            levelorder[1].append(levels.pop(self.random.randint(0, len(levels))))
-            levelorder[2].append(levels.pop(self.random.randint(0, len(levels))))
+            for ii in range(ranges[i]):
+                rand_num = self.random.randint(0, len(levels) - 1)
+                levelorder[i].append(levels.pop(rand_num))
         return levelorder
 
     def get_filler_item_name(self) -> str:

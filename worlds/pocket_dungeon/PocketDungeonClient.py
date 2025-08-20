@@ -1,6 +1,6 @@
 import asyncio
 from Utils import open_directory, open_file, async_start
-from NetUtils import NetworkItem, ClientStatus
+from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg
 from worlds import network_data_package
 import logging
@@ -18,6 +18,27 @@ class SKPDCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, SKPDContext):
             open_directory("Save Path", self.ctx.game_folder)
             self.output("Changed to the following directory: " + self.ctx.game_folder)
+
+class SKPDJSONToTextParser(JSONtoTextParser):
+    color_codes = {
+        "black": "[#000000]",
+        "red": "[#EE0000]",
+        "green": "[#00FF7F]",
+        "yellow": "[#FAFAD2]",
+        "blue": "[#6495ED]",
+        "magenta": "[#EE00EE]",
+        "cyan": "[#00EEEE]",
+        "slateblue": "[#6D8BE8]",
+        "plum": "[#AF99EF]",
+        "salmon": "[#FA8072]",
+        "white": "[#FFFFFF]",
+        "orange": "[#FF7700]",
+    }
+
+    def _handle_color(self, node: JSONMessagePart):
+        codes = node.get("color").split(";")
+        buffer = "".join(self.color_codes[code] for code in codes if code in self.color_codes)
+        return buffer + self._handle_text(node) + "[/c]"
     
 class SKPDContext(CommonContext):
     game = "Shovel Knight Pocket Dungeon"
@@ -35,10 +56,12 @@ class SKPDContext(CommonContext):
         self.server_packets = 0
         self.client_packets = 0
         self.client_data = {}
+        self.server_data = {}
         self.hint_data = []
         self.apsession = ""
         self.curr_seed = ""
         self.loc_name_to_id = network_data_package["games"][self.game]["location_name_to_id"] # type: ignore
+        self.gamejsontotext = SKPDJSONToTextParser(self)
 
         #load in default savedata
         self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
@@ -68,48 +91,70 @@ class SKPDContext(CommonContext):
     def on_package(self, cmd: str, args: dict):
         process_package(self, cmd, args)
 
+    def on_print_json(self, args: dict):
+        super().on_print_json(args)
+        relevant = args.get("type") in ["ItemSend", "ItemCheat", "Chat", "Goal"]
+        if relevant:
+            #filter out item sending not relevant to our slot and items sent to ourselves
+            if "item" in args and not self.slot_concerns_self(args["item"].player):
+                relevant = False
+            if "item" in args and self.slot_concerns_self(args["item"].player and self.slot_concerns_self(args["receiving"])):
+                relevant = False
+            if relevant:
+                self.server_data["PrintJSON"] = self.gamejsontotext(args["data"])
+                with open(self.server_file, "w") as file:
+                    json.dump(self.server_data, file)
+                
+                with open(self.server_packets_file, "w") as file:
+                    self.server_packets += 1
+                    file.write(str(self.server_packets))
+
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
+    newpacket = False
     if cmd == "RoomInfo":
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
         handle_savedata(ctx, args)
+        newpacket = True
     elif cmd == "ReceivedItems":
-        with open(ctx.server_file, "r") as file:
-            data = json.load(file)
-            if "ReceivedItems" not in data:
-                data["ReceivedItems"] = []
-            for item in args["items"]:
-                data["ReceivedItems"].append({
-                    "item": ctx.item_names.lookup_in_game(item.item),
-                    "player": ctx.player_names[item.player]
-                })
-            data["item_index"] = args["index"]
+        if "ReceivedItems" not in ctx.server_data:
+            ctx.server_data["ReceivedItems"] = []
+        for item in args["items"]:
+            ctx.server_data["ReceivedItems"].append({
+                "item": ctx.item_names.lookup_in_game(item.item),
+                "player": ctx.player_names[item.player],
+                "flags": item.flags
+            })
+            ctx.server_data["item_index"] = args["index"]
         with open(ctx.server_file, "w") as file:
-            json.dump(data, file)
+            json.dump(ctx.server_data, file)
+        newpacket = True
     elif cmd == "LocationInfo":
-        with open(ctx.server_file, "r") as file:
-            data = json.load(file)
-            if "LocationInfo" not in data:
-                data["LocationInfo"] = []
-            for loc in args["locations"]:
-                data["LocationInfo"].append({
-                    "item": ctx.item_names.lookup_in_game(loc.item, ctx.slot_info[loc.player].game),
-                    "location": ctx.location_names.lookup_in_game(loc.location),
-                    "player": ctx.player_names[loc.player],
-                    "flags": loc.flags
-                })
+        if "LocationInfo" not in ctx.server_data:
+            ctx.server_data["LocationInfo"] = {}
+        for loc in args["locations"]:
+            ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(loc.location)] = {
+                "item": ctx.item_names.lookup_in_game(loc.item, ctx.slot_info[loc.player].game),
+                "player": ctx.player_names[loc.player],
+                "flags": loc.flags
+            }
         with open(ctx.server_file, "w") as file:
-            json.dump(data, file)
+            json.dump(ctx.server_data, file)
+            newpacket = True
     
-    with open(ctx.server_packets_file, "w") as file:
-        ctx.server_packets += 1
-        file.write(str(ctx.server_packets))
+    if(newpacket):
+        with open(ctx.server_packets_file, "w") as file:
+            ctx.server_packets += 1
+            file.write(str(ctx.server_packets))
 
 def handle_savedata(ctx: SKPDContext, args: dict):
     #reset communication files
+    ctx.server_data = {"slot_data": args["slot_data"]}
     with open(ctx.server_file, "w") as file:
-        json.dump({"slot_data": args["slot_data"]}, file)
+        json.dump(ctx.server_data, file)
+    with open(ctx.server_packets_file, "w") as file:
+        file.write(str(ctx.server_packets))
     
     #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
@@ -172,7 +217,7 @@ async def game_watcher(ctx: SKPDContext):
             ctx.client_packets = curr_packets
             with open(ctx.client_file, "r") as file:
                 cli_data = json.load(file)
-                #dont check data if ap sessions dont match
+            #dont check data if ap sessions dont match
             if(cli_data["ap_session"] != ctx.apsession):
                 await asyncio.sleep(0.1)
                 continue
@@ -183,6 +228,11 @@ async def game_watcher(ctx: SKPDContext):
                 checked_locations = []
                 for loc in cli_data["LocationChecks"]:
                     checked_locations.append(ctx.loc_name_to_id[loc])
+                    #delete the locationscout for aquired location from dict
+                    if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
+                        del ctx.server_data["LocationInfo"][loc]
+                with open(ctx.server_file, "w") as file:
+                    json.dump(ctx.server_data, file)
                 packet.append({
                     "cmd": "LocationChecks",
                     "locations": checked_locations
@@ -190,6 +240,8 @@ async def game_watcher(ctx: SKPDContext):
             #send locationscount request
             if("LocationScouts" in cli_data and cli_data["LocationScouts"] != ctx.client_data):
                 location_scouts = []
+                if "LocationInfo" not in ctx.server_data:
+                    ctx.server_data["LocationInfo"] = {}
                 if f"_read_hints_{ctx.team}_{ctx.slot}" in ctx.stored_data:
                     hintdata = ctx.stored_data[f"_read_hints_{ctx.team}_{ctx.slot}"]
                 else:
@@ -198,29 +250,28 @@ async def game_watcher(ctx: SKPDContext):
                     #check if hint is already present in hintdata
                     send_scout_packet = True
                     for hint in hintdata:
-                        if ctx.loc_name_to_id[loc] == hint["location"]:
-                            with open(ctx.server_file, "r") as file:
-                                data = json.load(file)
-                                if "LocationInfo" not in data:
-                                    data["LocationInfo"] = []
-                                for hint in hintdata:
-                                    if(hint["finding_player"] == ctx.slot):
-                                        data["LocationInfo"].append({
-                                            "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
-                                            "location": ctx.location_names.lookup_in_game(hint["location"]),
-                                            "player": ctx.player_names[hint["receiving_player"]],
-                                            "flags": hint["item_flags"]
-                                        })
-                                with open(ctx.server_file, "w") as file:
-                                    json.dump(data, file)
+                        if ctx.loc_name_to_id[loc] == hint["location"] and hint["finding_player"] == ctx.slot:
+                            ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(hint["location"])] = {
+                                "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
+                                "player": ctx.player_names[hint["receiving_player"]],
+                                "flags": hint["item_flags"]
+                                }
                             send_scout_packet = False
                     #else add a location scouts packet
                     if send_scout_packet:
                         location_scouts.append(ctx.loc_name_to_id[loc])
+                    with open(ctx.server_file, "w") as file:
+                        json.dump(ctx.server_data, file)
                 packet.append({
                     "cmd": "LocationScouts",
                     "locations": location_scouts,
                     "create_as_hint": 1
+                })
+            #send clientstatus
+            if("ClientStatus" in cli_data and cli_data["ClientStatus"] != ctx.client_data):
+                packet.append({
+                    "cmd": "ClientStatus",
+                    "status": cli_data["ClientStatus"]
                 })
             #send packet if not empty
             if packet:
