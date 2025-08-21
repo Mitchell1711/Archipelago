@@ -51,10 +51,10 @@ class SKPDContext(CommonContext):
         self.save_file = os.path.join(self.game_folder, "save")
         self.server_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_data.json")
         self.client_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_data.json")
-        self.server_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_packets.txt")
-        self.client_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_packets.txt")
-        self.server_packets = 0
-        self.client_packets = 0
+        self.server_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_packets.json")
+        self.client_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_packets.json")
+        self.server_packets = {}
+        self.client_packets = {}
         self.client_data = {}
         self.server_data = {}
         self.hint_data = []
@@ -106,8 +106,11 @@ class SKPDContext(CommonContext):
                     json.dump(self.server_data, file)
                 
                 with open(self.server_packets_file, "w") as file:
-                    self.server_packets += 1
-                    file.write(str(self.server_packets))
+                    index = 0
+                    if "PrintJSON" in self.server_packets:
+                        index = self.server_packets["PrintJSON"]
+                    self.server_packets["PrintJSON"] = index + 1
+                    json.dump(self.server_packets, file)
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
@@ -116,7 +119,6 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
         handle_savedata(ctx, args)
-        newpacket = True
     elif cmd == "ReceivedItems":
         if "ReceivedItems" not in ctx.server_data:
             ctx.server_data["ReceivedItems"] = []
@@ -127,8 +129,6 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
                 "flags": item.flags
             })
             ctx.server_data["item_index"] = args["index"]
-        with open(ctx.server_file, "w") as file:
-            json.dump(ctx.server_data, file)
         newpacket = True
     elif cmd == "LocationInfo":
         if "LocationInfo" not in ctx.server_data:
@@ -139,14 +139,21 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
                 "player": ctx.player_names[loc.player],
                 "flags": loc.flags
             }
-        with open(ctx.server_file, "w") as file:
-            json.dump(ctx.server_data, file)
+            newpacket = True
+    elif cmd == "RoomUpdate":
+        if "checked_locations" in args:
+            ctx.server_data["CheckedLocations"] = args["checked_locations"]
             newpacket = True
     
     if(newpacket):
+        with open(ctx.server_file, "w") as file:
+            json.dump(ctx.server_data, file)
         with open(ctx.server_packets_file, "w") as file:
-            ctx.server_packets += 1
-            file.write(str(ctx.server_packets))
+            index = 0
+            if cmd in ctx.server_packets:
+                index = ctx.server_packets[cmd]
+            ctx.server_packets[cmd] = index + 1
+            json.dump(ctx.server_packets, file)
 
 def handle_savedata(ctx: SKPDContext, args: dict):
     #reset communication files
@@ -154,7 +161,7 @@ def handle_savedata(ctx: SKPDContext, args: dict):
     with open(ctx.server_file, "w") as file:
         json.dump(ctx.server_data, file)
     with open(ctx.server_packets_file, "w") as file:
-        file.write(str(ctx.server_packets))
+        json.dump(ctx.server_packets, file)
     
     #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
@@ -212,19 +219,24 @@ async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():
         #check for updates
         with open(ctx.client_packets_file, "r") as file:
-            curr_packets = int(file.read())
-        if ctx.client_packets != curr_packets:
+            curr_packets = json.load(file)
+        packets_to_check = []
+        for packet in list(curr_packets.keys()):
+            if packet not in ctx.client_packets or curr_packets[packet] != ctx.client_packets[packet]:
+                packets_to_check.append(packet)
+        #check for packets if theres new ones
+        if packets_to_check:
             ctx.client_packets = curr_packets
             with open(ctx.client_file, "r") as file:
                 cli_data = json.load(file)
-            #dont check data if ap sessions dont match
+            #abort if ap sessions dont match
             if(cli_data["ap_session"] != ctx.apsession):
                 await asyncio.sleep(0.1)
                 continue
                 
             packet = []
             #send checked locations
-            if("LocationChecks" in cli_data and cli_data["LocationChecks"] != ctx.client_data):
+            if("LocationChecks" in packets_to_check):
                 checked_locations = []
                 for loc in cli_data["LocationChecks"]:
                     checked_locations.append(ctx.loc_name_to_id[loc])
@@ -238,7 +250,7 @@ async def game_watcher(ctx: SKPDContext):
                     "locations": checked_locations
                 })
             #send locationscount request
-            if("LocationScouts" in cli_data and cli_data["LocationScouts"] != ctx.client_data):
+            if("LocationScouts" in packets_to_check):
                 location_scouts = []
                 if "LocationInfo" not in ctx.server_data:
                     ctx.server_data["LocationInfo"] = {}
@@ -268,7 +280,7 @@ async def game_watcher(ctx: SKPDContext):
                     "create_as_hint": 1
                 })
             #send clientstatus
-            if("ClientStatus" in cli_data and cli_data["ClientStatus"] != ctx.client_data):
+            if("ClientStatus" in packets_to_check):
                 packet.append({
                     "cmd": "ClientStatus",
                     "status": cli_data["ClientStatus"]
