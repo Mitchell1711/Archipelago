@@ -5,6 +5,7 @@ from .Items import SKPDItem, skpd_items, get_item_from_category
 from .Locations import skpd_locations, create_locations
 from .Regions import create_regions, dungeon_amount
 from .Options import SKPDOptions
+from Options import OptionError
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
@@ -38,9 +39,37 @@ class SKPDWorld(World):
     item_name_to_id = {name: data.code for name, data in skpd_items.items()}
     create_locations()
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
+
+    def generate_early(self) -> None:
+        self.characters = get_item_from_category("Character")
+        self.starting_character = self.options.starting_character.value
+        for char in self.options.excluded_characters.value:
+            self.characters.remove(char)
+        self.characters.remove(self.options.starting_character.value)
+
+        #remove random characters from the character list
+        char_amount = math.floor(len(self.characters) * (self.options.total_characters.value / 100))
+        to_remove = len(self.characters) - char_amount
+        for i in range(to_remove):
+            index = self.random.randint(0, len(self.characters))
+            self.characters.pop(index)
+        self.characters.append(self.options.starting_character.value)
+        
+        #add refract variants
+        if self.options.shuffle_refract_characters:
+            refract_list = []
+            for char in self.characters:
+                refract_char = f"{char} B"
+                if refract_char in skpd_items:
+                    refract_list.append(f"{char} B")
+            self.characters += refract_list
+        if self.options.starting_character_is_refract:
+            refract_char = f"{self.starting_character} B"
+            if refract_char in skpd_items:
+                self.starting_character = refract_char
     
     def create_regions(self) -> None:
-        create_regions(self.multiworld, self.player, self.options)
+        create_regions(self.multiworld, self.player, self.options, self.characters)
     
     def create_item(self, name: str) -> Item:
         data = skpd_items[name]
@@ -48,14 +77,19 @@ class SKPDWorld(World):
     
     def set_rules(self) -> None:
         set_rules(self.multiworld, self.player, self.options)
-        self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Enchantress Defeated", self.player)
-    
+        if(self.options.end_goal == 0):
+            self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Puzzle Knight Defeated", self.player)
+        elif(self.options.end_goal == 1):
+            self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Enchantress Defeated", self.player)
+
     def create_items(self) -> None:
         skpd_itempool = []
         locations_to_fill = len(self.multiworld.get_unfilled_locations(self.player))
 
-        for i in range(4):
-            skpd_itempool.append(self.create_item("Key Fragment"))
+        #key pieces are only needed for true ending
+        if(self.options.end_goal == 1):
+            for i in range(4):
+                skpd_itempool.append(self.create_item("Key Fragment"))
         for i in range(self.options.hub_shop_restock_count):
             skpd_itempool.append(self.create_item("Shop Restock"))
         for i in range(3):
@@ -63,32 +97,20 @@ class SKPDWorld(World):
                 skpd_itempool.append(self.create_item("Progressive Dungeon"))
             else:
                 self.push_precollected(self.create_item("Progressive Dungeon"))
-        
-        found_starting_char = False
-        for character in get_item_from_category("Character"):
-            if character != self.options.starting_character.value:
+
+        for character in self.characters:
+            if character != self.starting_character:
                 skpd_itempool.append(self.create_item(character))
-                found_starting_char = True
             else:
                 self.push_precollected(self.create_item(character))
-        if not found_starting_char:
-            raise Exception("[Shovel Knight Pocket Dungeon] Couldn't find starting character, please check if the .yaml is correct.")
-        
-        if self.options.shuffle_refract_characters:
-            for refract_character in get_item_from_category("Refract Character"):
-                skpd_itempool.append(self.create_item(refract_character))
         
         for relic in get_item_from_category("Relic"):
             skpd_itempool.append(self.create_item(relic))
         
         if self.options.enable_hats:
             for hat in get_item_from_category("Hat"):
-                skpd_itempool.append(self.create_item(hat))
-        #deprecated since shuffle/random aren't part of the pool anymore
-        # else:
-            #these are progression items so shuffle and random knight can get their checks
-            # skpd_itempool.append(self.create_item("Almond"))
-            # skpd_itempool.append(self.create_item("Souffle"))
+                if hat not in self.options.excluded_hats.value:
+                    skpd_itempool.append(self.create_item(hat))
         
         total_filler = locations_to_fill - len(skpd_itempool)
         traps_to_place = math.floor(total_filler * (self.options.trap_fill_percent / 100))
@@ -142,7 +164,9 @@ class SKPDWorld(World):
         if self.options.randomize_level_order:
             levelorder = self.shuffle_levels()
         return {
-            "StartingChar": str(self.options.starting_character.value),
-            "DeathLink": bool(self.options.death_link),
-            "RandomizeLevelOrder": levelorder
+            "StartingChar": self.starting_character,
+            "DeathLink": self.options.death_link.value,
+            "RandomizeLevelOrder": levelorder,
+            "HatExpiration": self.options.hat_expiration_action.value,
+            "EndGoal": self.options.end_goal.value
         }

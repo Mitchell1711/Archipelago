@@ -11,7 +11,7 @@ class SKPDLocationData(NamedTuple):
     category: str
     data: Any = None
 
-def get_location_from_category(category: str) -> list:
+def get_location_from_category(category: str) -> list[str]:
     locationlist = []
     for loc in skpd_locations:
         if skpd_locations[loc].category == category:
@@ -66,6 +66,9 @@ def create_locations():
         location_index = add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters, location_index)
     location_index = add_dungeon_shop_locations("Scholar Sanctum Shop", characters, location_index)
     location_index = add_dungeon_shop_locations("Tower of Fate Shop", characters, location_index)
+    #special chester dungeon shop location since only he can enter a shop on the first stage
+    skpd_locations.update({"Dungeon 1 Shop - Chester": SKPDLocationData(location_index, "Dungeon Shop", "Chester")})
+    location_index += 1
 
 def add_dungeon_shop_locations(location: str, characters: list, location_index: int) -> int:
     for character in characters:

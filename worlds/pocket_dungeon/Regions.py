@@ -5,7 +5,7 @@ from .Options import SKPDOptions
 
 dungeon_amount = 10
 
-def create_regions(world: MultiWorld, player: int, options: SKPDOptions):
+def create_regions(world: MultiWorld, player: int, options: SKPDOptions, characters: list[str]):
     boss_table = [
         ["King Knight Defeated", "Specter Knight Defeated", "Plague Knight Defeated", "Black Knight Defeated"],
         ["Treasure Knight Defeated", "Tinker Knight Defeated", "Mole Knight Defeated", "Scrap Knight Defeated"],
@@ -30,7 +30,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions):
         #create dungeon regions and add shops
         reg_dungeons.append(create_region(f"Dungeon {i+1}", player, world))
         if i != 0:
-            add_dungeon_shops(reg_dungeons[i], player, dungeon_shops)
+            add_dungeon_shops(reg_dungeons[i], player, dungeon_shops, characters)
         #add shrine locations
         match i+1:
             case 3:
@@ -51,11 +51,12 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions):
     #final levels never get shuffled around
     reg_sanctum = create_region("Scholar Sanctum", player, world)
     add_location(reg_sanctum, "Puzzle Knight Defeated", player)
-    add_dungeon_shops(reg_sanctum, player, dungeon_shops)
+    add_dungeon_shops(reg_sanctum, player, dungeon_shops, characters)
 
-    reg_tower = create_region("Tower of Fate", player, world)
-    add_location(reg_tower, "Enchantress Defeated", player)
-    add_dungeon_shops(reg_tower, player, dungeon_shops)
+    if(options.end_goal.value == 1):
+        reg_tower = create_region("Tower of Fate", player, world)
+        add_location(reg_tower, "Enchantress Defeated", player)
+        add_dungeon_shops(reg_tower, player, dungeon_shops, characters)
 
 def create_region(name: str, player: int, world: MultiWorld) -> Region:
     region = Region(name, player, world, None)
@@ -68,7 +69,7 @@ def connect_regions(world: MultiWorld, player: int, source: str, target: str, ru
 def add_location(region: Region, location: str, player: int):
     region.locations.append(SKPDLocation(player, location, skpd_locations[location].code, region))
 
-def add_dungeon_shops(region: Region, player: int, locations: list):
+def add_dungeon_shops(region: Region, player: int, locations: list[str], characters: list[str]):
     for loc in locations:
-        if region.name in loc:
+        if region.name in loc and skpd_locations[loc].data in characters:
             add_location(region, loc, player)

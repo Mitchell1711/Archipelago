@@ -27,7 +27,8 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: state.has("Progressive Dungeon", player, 3))
     add_rule(dungeon_connection, lambda state: relic_logic(state, player, relics, 9))
 
-    connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
+    if(options.end_goal.value == 1):
+        connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
     for location in world.get_locations(player):
         set_rule(location, lambda state: True)
@@ -42,15 +43,10 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
             character = skpd_locations[location.name].data
             add_rule(location, lambda state, char=character: state.has(char, player))
             #add refract characters if enabled
-            if options.shuffle_refract_characters:
+            if options.shuffle_refract_characters and location.name != "Dungeon 1 Shop - Chester":
                 refract_char = f"{character} B"
                 if refract_char in skpd_items:
                     add_rule(location, lambda state, char=refract_char: state.has(char, player), "or")
-            #random and shuffle knight require their respective hats to be played on their own
-            if character == "Random Knight":
-                add_rule(location, lambda state: state.has("Almond", player))
-            elif character == "Shuffle Knight":
-                add_rule(location, lambda state: state.has("Souffle", player))
 
 #calculates whether an area is feasible by counting the quality of your acquired relics
 def relic_logic(state: CollectionState, player: int, items: list, required_quality: int):

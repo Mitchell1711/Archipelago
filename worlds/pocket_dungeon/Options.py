@@ -1,13 +1,57 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice, OptionSet, FreeText
+from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice, OptionSet, FreeText, ItemSet
 
-class StartingCharacter(FreeText):
+class StartingCharacter(Choice):
     """
     Determines which character you start the game with.
-    Refract characters use their name + B (eg. Shovel Knight B)
     """
     display_name = "Starting Character"
+    option_shovel_knight = "Shovel Knight"
+    option_black_knight = "Black Knight"
+    option_shield_knight = "Shield Knight"
+    option_king_knight = "King Knight"
+    option_specter_knight = "Specter Knight"
+    option_plague_knight = "Plage Knight"
+    option_mole_knight = "Mole Knight"
+    option_treasure_knight = "Treasure Knight"
+    option_tinker_knight = "Tinker Knight"
+    option_polar_knight = "Polar Knight"
+    option_propeller_knight = "Propeller Knight"
+    option_scrap_knight = "Scrap Knight"
+    option_prism_knight = "Prism Knight"
+    option_puzzle_knight = "Puzzle Knight"
+    option_mona = "Mona"
+    option_chester = "Chester"
+    option_enchantress = "Enchantress"
+    option_quandary_sage = "Quandary Sage"
+    option_spinwulf = "Spinwulf"
+    option_schmutz = "Schmutz"
+    option_beefto = "Beefto"
     default = "Shovel Knight"
+
+class StartingCharacterIsRefract(Toggle):
+    """
+    Makes starting character use their refract variant.
+    Characters without a refract skill won't be affected.
+    """
+    display_name = "Use Refract Starting Character"
+
+class ExcludedCharacters(ItemSet):
+    """
+    Prevent these characters and their related locations from being shuffled into the multiworld.
+    """
+    display_name = "Excluded Characters"
+    default = {"Quandary Sage", "Spinwulf", "Schmutz", "Beefto"}
+
+class TotalCharacters(Range):
+    """
+    Cut out a percentage of playable characters from the pool at random, useful for shorter Archipelago sessions.
+    100 will include all characters, 0 will only add your starting character.
+    """
+    display_name = "Total Characters"
+    range_start = 0
+    range_end = 100
+    default = 100
 
 class ShuffleRefractCharacters(DefaultOnToggle):
     """
@@ -36,7 +80,7 @@ class ProgressionType(Choice):
     option_progressive_dungeons = 0
     option_key_hunt = 1
     option_none = 2
-    default = 0
+    default = 2
 
 class EnableHats(Toggle):
     """
@@ -44,6 +88,24 @@ class EnableHats(Toggle):
     If turned off Almond and Souffle will still be added to the pool.
     """
     display_name = "Enable Hats"
+
+class HatExpirationAction(Choice):
+    """
+    When any recieved hat effects wear off.
+    New hat: Current hat gets removed when a new hat is sent
+    End run: Current hat gets removed when dying or beating the next adventure run.
+    """
+    display_name = "Hat Expiration Action"
+    option_new_hat = 0
+    option_end_run = 1
+    default = 1
+
+class ExcludedHats(ItemSet):
+    """
+    Prevent these hats from being shuffled into the multiworld.
+    """
+    display_name = "Excluded Hats"
+    default = {"Shop Lock Shako", "Legendary Gold Helm", "Protracted Beeto Beret"}
 
 class TrapFillPercent(Range):
     """
@@ -69,14 +131,31 @@ class ModdedLevels(OptionSet):
     display_name = "Modded Levels"
     default = {}
 
+class EndGoal(Choice):
+    """
+    Which condition you need to reach to finish your game.
+    Normal Ending: Reach the Scholar Sanctum and defeat Puzzle Knight.
+    True Ending: Collect 4 key fragments to reach the Tower of Fate and defeat the Enchantress.
+    """
+    display_name = "End Goal"
+    option_normal_ending = 0
+    option_true_ending = 1
+    default = 1
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
+    end_goal: EndGoal
     starting_character: StartingCharacter
     shuffle_refract_characters: ShuffleRefractCharacters
+    starting_character_is_refract: StartingCharacterIsRefract
+    excluded_characters: ExcludedCharacters
+    total_characters: TotalCharacters
     hub_shop_restock_count: HubShopRestockCount
     progression_type: ProgressionType
     randomize_level_order: RandomizeLevelOrder
     modded_levels: ModdedLevels
     enable_hats: EnableHats
+    hat_expiration_action: HatExpirationAction
+    excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
     death_link: DeathLink
