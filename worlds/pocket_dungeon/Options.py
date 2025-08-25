@@ -80,7 +80,7 @@ class ProgressionType(Choice):
     option_progressive_dungeons = 0
     option_key_hunt = 1
     option_none = 2
-    default = 2
+    default = 0
 
 class EnableHats(Toggle):
     """

@@ -51,7 +51,7 @@ class SKPDWorld(World):
         char_amount = math.floor(len(self.characters) * (self.options.total_characters.value / 100))
         to_remove = len(self.characters) - char_amount
         for i in range(to_remove):
-            index = self.random.randint(0, len(self.characters))
+            index = self.random.randint(0, len(self.characters) - 1)
             self.characters.pop(index)
         self.characters.append(self.options.starting_character.value)
         
