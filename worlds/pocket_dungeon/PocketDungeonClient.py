@@ -16,8 +16,14 @@ class SKPDCommandProcessor(ClientCommandProcessor):
     def _cmd_savepath(self):
         """Change the directory where your savefile is located"""
         if isinstance(self.ctx, SKPDContext):
-            open_directory("Save Path", self.ctx.game_folder)
-            self.output("Changed to the following directory: " + self.ctx.game_folder)
+            open_directory("Save Folder", self.ctx.save_folder)
+            self.output("Changed to the following directory: " + self.ctx.save_folder)
+    
+    def _cmd_modpath(self):
+        """Change the directory where the Archipelago mod is located"""
+        if isinstance(self.ctx, SKPDContext):
+            open_directory("Mod Folder", self.ctx.mod_folder)
+            self.output("Changed to the following directory: " + self.ctx.mod_folder)
 
 class SKPDJSONToTextParser(JSONtoTextParser):
     color_codes = {
@@ -47,12 +53,13 @@ class SKPDContext(CommonContext):
     def __init__(self, server_address: str | None = None, password: str | None = None) -> None:
         super().__init__(server_address, password)
         self.items_handling = 0b111
-        self.game_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
-        self.save_file = os.path.join(self.game_folder, "save")
-        self.server_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_data.json")
-        self.client_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_data.json")
-        self.server_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/server_packets.json")
-        self.client_packets_file = os.path.join(self.game_folder, "mods/Archipelago/data/client_packets.json")
+        self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
+        self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
+        self.save_file = os.path.join(self.save_folder, "save")
+        self.server_file = os.path.join(self.mod_folder, "mods/Archipelago/data/server_data.json")
+        self.client_file = os.path.join(self.mod_folder, "mods/Archipelago/data/client_data.json")
+        self.server_packets_file = os.path.join(self.mod_folder, "mods/Archipelago/data/server_packets.json")
+        self.client_packets_file = os.path.join(self.mod_folder, "mods/Archipelago/data/client_packets.json")
         self.server_packets = {}
         self.client_packets = {}
         self.client_data = {}
@@ -165,7 +172,7 @@ def handle_savedata(ctx: SKPDContext, args: dict):
     
     #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
-    savefile_list = os.listdir(ctx.game_folder)
+    savefile_list = os.listdir(ctx.save_folder)
 
     if "save"+ctx.apsession in savefile_list:
         do_copy = backup_savedata(ctx)
