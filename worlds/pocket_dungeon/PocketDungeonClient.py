@@ -287,10 +287,10 @@ async def game_watcher(ctx: SKPDContext):
                     "create_as_hint": 1
                 })
             #send clientstatus
-            if("ClientStatus" in packets_to_check):
+            if("StatusUpdate" in packets_to_check):
                 packet.append({
-                    "cmd": "ClientStatus",
-                    "status": cli_data["ClientStatus"]
+                    "cmd": "StatusUpdate",
+                    "status": cli_data["StatusUpdate"]
                 })
             #send packet if not empty
             if packet:

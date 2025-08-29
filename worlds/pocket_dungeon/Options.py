@@ -82,12 +82,17 @@ class ProgressionType(Choice):
     option_none = 2
     default = 0
 
+class ShuffleRelics(DefaultOnToggle):
+    """
+    Shuffles all relics into the itempool.
+    """
+    display_name = "Shuffle Relics"
+
 class EnableHats(Toggle):
     """
     Shuffles all hats into the itempool.
-    If turned off Almond and Souffle will still be added to the pool.
     """
-    display_name = "Enable Hats"
+    display_name = "Shuffle Hats"
 
 class HatExpirationAction(Choice):
     """
@@ -98,6 +103,15 @@ class HatExpirationAction(Choice):
     display_name = "Hat Expiration Action"
     option_new_hat = 0
     option_end_run = 1
+    default = 1
+
+class HatStackAmount(Range):
+    """
+    The maximum amount of hats a player is able to have at a time.
+    """
+    display_name = "Hat Stack Amount"
+    range_start = 1
+    range_end = 50
     default = 1
 
 class ExcludedHats(ItemSet):
@@ -154,8 +168,10 @@ class SKPDOptions(PerGameCommonOptions):
     progression_type: ProgressionType
     randomize_level_order: RandomizeLevelOrder
     modded_levels: ModdedLevels
+    shuffle_relics: ShuffleRelics
     enable_hats: EnableHats
     hat_expiration_action: HatExpirationAction
+    hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
     death_link: DeathLink
