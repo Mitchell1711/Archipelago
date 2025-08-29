@@ -17,7 +17,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     #set up camp region
     reg_camp = create_region("Camp", player, world)
     for loc in get_location_from_category("Chester Camp Shop"):
-        if skpd_locations[loc].data < options.hub_shop_restock_count:
+        if skpd_locations[loc].data <= options.hub_shop_restock_count:
             add_location(reg_camp, loc, player)
 
     #unused for now

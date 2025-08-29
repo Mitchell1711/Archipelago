@@ -56,10 +56,10 @@ class SKPDContext(CommonContext):
         self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
         self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.save_file = os.path.join(self.save_folder, "save")
-        self.server_file = os.path.join(self.mod_folder, "mods/Archipelago/data/server_data.json")
-        self.client_file = os.path.join(self.mod_folder, "mods/Archipelago/data/client_data.json")
-        self.server_packets_file = os.path.join(self.mod_folder, "mods/Archipelago/data/server_packets.json")
-        self.client_packets_file = os.path.join(self.mod_folder, "mods/Archipelago/data/client_packets.json")
+        self.server_file = os.path.join(self.mod_folder, "data/server_data.json")
+        self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
+        self.server_packets_file = os.path.join(self.mod_folder, "data/server_packets.json")
+        self.client_packets_file = os.path.join(self.mod_folder, "data/client_packets.json")
         self.server_packets = {}
         self.client_packets = {}
         self.client_data = {}
