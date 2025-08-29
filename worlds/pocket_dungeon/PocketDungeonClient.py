@@ -8,6 +8,7 @@ import sys
 import os
 import json
 import pkgutil
+import math
 
 class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
@@ -60,6 +61,7 @@ class SKPDContext(CommonContext):
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
         self.server_packets_file = os.path.join(self.mod_folder, "data/server_packets.json")
         self.client_packets_file = os.path.join(self.mod_folder, "data/client_packets.json")
+        self.stage_order_script = os.path.join(self.mod_folder, "stage_order.gml")
         self.server_packets = {}
         self.client_packets = {}
         self.client_data = {}
@@ -126,6 +128,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
         handle_savedata(ctx, args)
+        create_stage_order(ctx, args["slot_data"]["StageOrder"])
     elif cmd == "ReceivedItems":
         if "ReceivedItems" not in ctx.server_data:
             ctx.server_data["ReceivedItems"] = []
@@ -221,6 +224,16 @@ def backup_savedata(ctx: SKPDContext) -> bool:
             file_2.write(filestr)
         return True
     return False
+
+def create_stage_order(ctx: SKPDContext, stage_order: list[str]):
+    with open(ctx.stage_order_script, "w") as file:
+        if stage_order:
+            formatted_stage_order = []
+            for i in range(9):
+                formatted_stage_order.append(stage_order[math.floor(i / 3)])
+            file.writelines(["adaptive_levels = true", f"\nlvl_order = {json.dumps(formatted_stage_order)}"])
+        else:
+            file.write("")
 
 async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():

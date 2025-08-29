@@ -88,7 +88,7 @@ class ShuffleRelics(DefaultOnToggle):
     """
     display_name = "Shuffle Relics"
 
-class EnableHats(Toggle):
+class ShuffleHats(Toggle):
     """
     Shuffles all hats into the itempool.
     """
@@ -169,7 +169,7 @@ class SKPDOptions(PerGameCommonOptions):
     randomize_level_order: RandomizeLevelOrder
     modded_levels: ModdedLevels
     shuffle_relics: ShuffleRelics
-    enable_hats: EnableHats
+    shuffle_hats: ShuffleHats
     hat_expiration_action: HatExpirationAction
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats

@@ -110,7 +110,7 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(relic))
         
-        if self.options.enable_hats:
+        if self.options.shuffle_hats:
             for hat in get_item_from_category("Hat"):
                 if hat not in self.options.excluded_hats.value:
                     skpd_itempool.append(self.create_item(hat))
@@ -169,7 +169,7 @@ class SKPDWorld(World):
         return {
             "StartingChar": self.starting_character,
             "DeathLink": self.options.death_link.value,
-            "RandomizeLevelOrder": levelorder,
+            "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
             "EndGoal": self.options.end_goal.value
