@@ -103,6 +103,7 @@
         "singleplayer_cutscenes" : 1,
         "blessing unlocked 34" : 1,
         "blessing unlocked 11" : 1,
-        "last_pindex3" : 0
+        "last_pindex3" : 0,
+        "highest_level" : 11
     }
 }
