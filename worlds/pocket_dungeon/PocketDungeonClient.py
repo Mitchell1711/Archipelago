@@ -259,7 +259,8 @@ async def game_watcher(ctx: SKPDContext):
             if("LocationChecks" in packets_to_check):
                 checked_locations = []
                 for loc in cli_data["LocationChecks"]:
-                    checked_locations.append(ctx.loc_name_to_id[loc])
+                    if ctx.loc_name_to_id.get(loc) != None:
+                        checked_locations.append(ctx.loc_name_to_id[loc])
                     #delete the locationscout for aquired location from dict
                     if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
                         del ctx.server_data["LocationInfo"][loc]
@@ -280,20 +281,21 @@ async def game_watcher(ctx: SKPDContext):
                     hintdata = []
                 for loc in cli_data["LocationScouts"]:
                     #check if hint is already present in hintdata
-                    send_scout_packet = True
-                    for hint in hintdata:
-                        if ctx.loc_name_to_id[loc] == hint["location"] and hint["finding_player"] == ctx.slot:
-                            ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(hint["location"])] = {
-                                "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
-                                "player": ctx.player_names[hint["receiving_player"]],
-                                "flags": hint["item_flags"]
-                                }
-                            send_scout_packet = False
-                    #else add a location scouts packet
-                    if send_scout_packet:
-                        location_scouts.append(ctx.loc_name_to_id[loc])
-                    with open(ctx.server_file, "w") as file:
-                        json.dump(ctx.server_data, file)
+                    if ctx.loc_name_to_id.get(loc) != None:
+                        send_scout_packet = True
+                        for hint in hintdata:
+                            if ctx.loc_name_to_id[loc] == hint["location"] and hint["finding_player"] == ctx.slot:
+                                ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(hint["location"])] = {
+                                    "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
+                                    "player": ctx.player_names[hint["receiving_player"]],
+                                    "flags": hint["item_flags"]
+                                    }
+                                send_scout_packet = False
+                        #else add a location scouts packet
+                        if send_scout_packet:
+                            location_scouts.append(ctx.loc_name_to_id[loc])
+                with open(ctx.server_file, "w") as file:
+                    json.dump(ctx.server_data, file)
                 packet.append({
                     "cmd": "LocationScouts",
                     "locations": location_scouts,
