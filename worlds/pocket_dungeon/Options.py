@@ -27,7 +27,7 @@ class StartingCharacter(Choice):
     option_spinwulf = "Spinwulf"
     option_schmutz = "Schmutz"
     option_beefto = "Beefto"
-    default = "Shovel Knight"
+    default = option_shovel_knight
 
 class StartingCharacterIsRefract(Toggle):
     """
