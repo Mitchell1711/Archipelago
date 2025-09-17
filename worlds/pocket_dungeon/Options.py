@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, DeathLink, PerGameCommonOptions, Choice, OptionSet, FreeText, ItemSet
+from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet
 
 class StartingCharacter(Choice):
     """
@@ -174,4 +174,3 @@ class SKPDOptions(PerGameCommonOptions):
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
-    death_link: DeathLink
