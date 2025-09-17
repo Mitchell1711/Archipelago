@@ -1,7 +1,7 @@
 import asyncio
 from Utils import open_directory, open_file, async_start
 from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
-from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg
+from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
 from worlds import network_data_package
 import logging
 import sys
@@ -9,6 +9,8 @@ import os
 import json
 import pkgutil
 import math
+import atexit
+import subprocess
 
 class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
@@ -17,14 +19,20 @@ class SKPDCommandProcessor(ClientCommandProcessor):
     def _cmd_savepath(self):
         """Change the directory where your savefile is located"""
         if isinstance(self.ctx, SKPDContext):
-            open_directory("Save Folder", self.ctx.save_folder)
+            self.ctx.save_folder = open_directory("Save Folder", self.ctx.save_folder)
             self.output("Changed to the following directory: " + self.ctx.save_folder)
     
     def _cmd_modpath(self):
         """Change the directory where the Archipelago mod is located"""
         if isinstance(self.ctx, SKPDContext):
-            open_directory("Mod Folder", self.ctx.mod_folder)
+            self.ctx.mod_folder = open_directory("Mod Folder", self.ctx.mod_folder)
             self.output("Changed to the following directory: " + self.ctx.mod_folder)
+    
+    def _cmd_gamepath(self):
+        """Change the directory where the game is located"""
+        if isinstance(self.ctx, SKPDContext):
+            self.ctx.game_folder = open_directory(self.ctx.game_folder)
+            self.output("Changed to the following directory: " + self.ctx.game_folder)
 
 class SKPDJSONToTextParser(JSONtoTextParser):
     color_codes = {
@@ -56,6 +64,7 @@ class SKPDContext(CommonContext):
         self.items_handling = 0b111
         self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
         self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
+        self.game_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon"
         self.save_file = os.path.join(self.save_folder, "save")
         self.server_file = os.path.join(self.mod_folder, "data/server_data.json")
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
@@ -71,6 +80,8 @@ class SKPDContext(CommonContext):
         self.curr_seed = ""
         self.loc_name_to_id = network_data_package["games"][self.game]["location_name_to_id"] # type: ignore
         self.gamejsontotext = SKPDJSONToTextParser(self)
+        self.game_subprocess: subprocess.Popen = None
+        atexit.register(self.enable_steamworks)
 
         #load in default savedata
         self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
@@ -111,15 +122,27 @@ class SKPDContext(CommonContext):
                 relevant = False
             if relevant:
                 self.server_data["PrintJSON"] = self.gamejsontotext(args["data"])
-                with open(self.server_file, "w") as file:
-                    json.dump(self.server_data, file)
-                
-                with open(self.server_packets_file, "w") as file:
-                    index = 0
-                    if "PrintJSON" in self.server_packets:
-                        index = self.server_packets["PrintJSON"]
-                    self.server_packets["PrintJSON"] = index + 1
-                    json.dump(self.server_packets, file)
+                write_server_packets(self, "PrintJSON")
+    
+    def disable_steamworks(self):
+        try:
+            os.rename(os.path.join(self.game_folder, "steam_api64.dll"), os.path.join(self.game_folder, "steam_api64_disabled.dll"))
+            os.rename(os.path.join(self.game_folder, "Steamworks_x64.dll"), os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"))
+        except FileNotFoundError:
+            if os.path.exists(os.path.join(self.game_folder, "steam_api64_disabled.dll")):
+                print(logger.info("Steamworks .dll files have already been disabled."))
+            else:
+                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+
+    def enable_steamworks(self):
+        try:
+            os.rename(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.path.join(self.game_folder, "steam_api64.dll"))
+            os.rename(os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"), os.path.join(self.game_folder, "Steamworks_x64.dll"))
+        except FileNotFoundError:
+            if os.path.exists(os.path.join(self.game_folder, "steam_api64.dll")):
+                print(logger.info("Steamworks .dll files have already been enabled."))
+            else:
+                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
@@ -129,6 +152,8 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
     elif cmd == "Connected":
         handle_savedata(ctx, args)
         create_stage_order(ctx, args["slot_data"]["StageOrder"])
+        ctx.disable_steamworks()
+        run_game(ctx)
     elif cmd == "ReceivedItems":
         if "ReceivedItems" not in ctx.server_data:
             ctx.server_data["ReceivedItems"] = []
@@ -156,14 +181,17 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             newpacket = True
     
     if(newpacket):
-        with open(ctx.server_file, "w") as file:
-            json.dump(ctx.server_data, file)
-        with open(ctx.server_packets_file, "w") as file:
-            index = 0
-            if cmd in ctx.server_packets:
-                index = ctx.server_packets[cmd]
-            ctx.server_packets[cmd] = index + 1
-            json.dump(ctx.server_packets, file)
+        write_server_packets(ctx, cmd)
+
+def write_server_packets(ctx: SKPDContext, cmd: str):
+    with open(ctx.server_file, "w") as file:
+        json.dump(ctx.server_data, file)
+    with open(ctx.server_packets_file, "w") as file:
+        index = 0
+        if cmd in ctx.server_packets:
+            index = ctx.server_packets[cmd]
+        ctx.server_packets[cmd] = index + 1
+        json.dump(ctx.server_packets, file)
 
 def handle_savedata(ctx: SKPDContext, args: dict):
     #reset communication files
@@ -235,6 +263,13 @@ def create_stage_order(ctx: SKPDContext, stage_order: list[str]):
         else:
             file.write("")
 
+def run_game(ctx: SKPDContext):
+    if ctx.game_subprocess == None or ctx.game_subprocess.poll() != None:
+        try:
+            ctx.game_subprocess = subprocess.Popen(os.path.join(ctx.game_folder, "Shovel Knight Pocket Dungeon.exe"))
+        except FileNotFoundError:
+            logger.error("Couldn't find game executable, please check if the game folder path is set correctly.")
+
 async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():
         #check for updates
@@ -279,23 +314,26 @@ async def game_watcher(ctx: SKPDContext):
                     hintdata = ctx.stored_data[f"_read_hints_{ctx.team}_{ctx.slot}"]
                 else:
                     hintdata = []
+                cached_info = False
                 for loc in cli_data["LocationScouts"]:
                     #check if hint is already present in hintdata
                     if ctx.loc_name_to_id.get(loc) != None:
                         send_scout_packet = True
                         for hint in hintdata:
                             if ctx.loc_name_to_id[loc] == hint["location"] and hint["finding_player"] == ctx.slot:
-                                ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(hint["location"])] = {
+                                ctx.server_data["LocationInfo"][loc] = {
                                     "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
                                     "player": ctx.player_names[hint["receiving_player"]],
                                     "flags": hint["item_flags"]
                                     }
+                                cached_info = True
                                 send_scout_packet = False
                         #else add a location scouts packet
                         if send_scout_packet:
                             location_scouts.append(ctx.loc_name_to_id[loc])
-                with open(ctx.server_file, "w") as file:
-                    json.dump(ctx.server_data, file)
+                if cached_info:
+                    write_server_packets(ctx, "LocationInfo")
+                
                 packet.append({
                     "cmd": "LocationScouts",
                     "locations": location_scouts,
