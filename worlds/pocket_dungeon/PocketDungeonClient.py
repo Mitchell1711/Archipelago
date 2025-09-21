@@ -150,17 +150,20 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
     if cmd == "RoomInfo":
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
-        handle_savedata(ctx, args)
-        create_stage_order(ctx, args["slot_data"]["StageOrder"])
-        ctx.disable_steamworks()
+        if ctx.apsession != str(ctx.slot) + ctx.curr_seed:
+            handle_savedata(ctx, args)
+            create_stage_order(ctx, args["slot_data"]["StageOrder"])
+            ctx.disable_steamworks()
+        write_connection_status(ctx, True)
         run_game(ctx)
+        newpacket = True
     elif cmd == "ReceivedItems":
         if "ReceivedItems" not in ctx.server_data:
             ctx.server_data["ReceivedItems"] = []
         for item in args["items"]:
             ctx.server_data["ReceivedItems"].append({
-                "item": ctx.item_names.lookup_in_game(item.item),
-                "player": ctx.player_names[item.player],
+                "item": item.item,
+                "player": item.player,
                 "flags": item.flags
             })
             ctx.server_data["item_index"] = args["index"]
@@ -169,9 +172,9 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
         if "LocationInfo" not in ctx.server_data:
             ctx.server_data["LocationInfo"] = {}
         for loc in args["locations"]:
-            ctx.server_data["LocationInfo"][ctx.location_names.lookup_in_game(loc.location)] = {
+            ctx.server_data["LocationInfo"][loc.location] = {
                 "item": ctx.item_names.lookup_in_game(loc.item, ctx.slot_info[loc.player].game),
-                "player": ctx.player_names[loc.player],
+                "player": loc.player,
                 "flags": loc.flags
             }
             newpacket = True
@@ -193,9 +196,15 @@ def write_server_packets(ctx: SKPDContext, cmd: str):
         ctx.server_packets[cmd] = index + 1
         json.dump(ctx.server_packets, file)
 
+def write_connection_status(ctx: SKPDContext, status: bool):
+    with open(ctx.server_packets_file, "w") as file:
+        ctx.server_packets["Connected"] = status
+        json.dump(ctx.server_packets, file)
+
 def handle_savedata(ctx: SKPDContext, args: dict):
     #reset communication files
     ctx.server_data = {"slot_data": args["slot_data"]}
+    ctx.server_data["player_names"] = ctx.player_names
     with open(ctx.server_file, "w") as file:
         json.dump(ctx.server_data, file)
     with open(ctx.server_packets_file, "w") as file:
@@ -294,16 +303,25 @@ async def game_watcher(ctx: SKPDContext):
             if("LocationChecks" in packets_to_check):
                 checked_locations = []
                 for loc in cli_data["LocationChecks"]:
-                    if ctx.loc_name_to_id.get(loc) != None:
-                        checked_locations.append(ctx.loc_name_to_id[loc])
-                    #delete the locationscout for aquired location from dict
-                    if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
-                        del ctx.server_data["LocationInfo"][loc]
+                    if loc not in ctx.locations_checked:
+                        checked_locations.append(loc)
+                        #delete the locationscout for aquired location from dict
+                        if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
+                            del ctx.server_data["LocationInfo"][loc]
                 with open(ctx.server_file, "w") as file:
                     json.dump(ctx.server_data, file)
                 packet.append({
                     "cmd": "LocationChecks",
                     "locations": checked_locations
+                })
+            if("LocationSync" in packets_to_check):
+                locations_to_sync = []
+                for loc in cli_data["LocationSync"]:
+                    if loc not in ctx.locations_checked:
+                        locations_to_sync.append(loc)
+                packet.append({
+                    "cmd": "LocationChecks",
+                    "locations": locations_to_sync
                 })
             #send locationscount request
             if("LocationScouts" in packets_to_check):
@@ -317,27 +335,26 @@ async def game_watcher(ctx: SKPDContext):
                 cached_info = False
                 for loc in cli_data["LocationScouts"]:
                     #check if hint is already present in hintdata
-                    if ctx.loc_name_to_id.get(loc) != None:
-                        send_scout_packet = True
-                        for hint in hintdata:
-                            if ctx.loc_name_to_id[loc] == hint["location"] and hint["finding_player"] == ctx.slot:
-                                ctx.server_data["LocationInfo"][loc] = {
-                                    "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
-                                    "player": ctx.player_names[hint["receiving_player"]],
-                                    "flags": hint["item_flags"]
-                                    }
-                                cached_info = True
-                                send_scout_packet = False
-                        #else add a location scouts packet
-                        if send_scout_packet:
-                            location_scouts.append(ctx.loc_name_to_id[loc])
+                    send_scout_packet = True
+                    for hint in hintdata:
+                        if loc == hint["location"] and hint["finding_player"] == ctx.slot:
+                            ctx.server_data["LocationInfo"][loc] = {
+                                "item": ctx.item_names.lookup_in_game(hint["item"], ctx.slot_info[hint["receiving_player"]].game),
+                                "player": hint["receiving_player"],
+                                "flags": hint["item_flags"]
+                                }
+                            cached_info = True
+                            send_scout_packet = False
+                    #else add a location scouts packet
+                    if send_scout_packet:
+                        location_scouts.append(loc)
                 if cached_info:
                     write_server_packets(ctx, "LocationInfo")
                 
                 packet.append({
                     "cmd": "LocationScouts",
                     "locations": location_scouts,
-                    "create_as_hint": 1
+                    "create_as_hint": 0
                 })
             #send clientstatus
             if("StatusUpdate" in packets_to_check):

@@ -9,6 +9,7 @@ from Options import OptionError
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
+import json
 
 def run_client(*args: str):
     print("Running Pocket Dungeon Client")
@@ -40,6 +41,21 @@ class SKPDWorld(World):
     create_locations()
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
 
+    def generate_mod_mappings(self) -> None:
+        mappings = {}
+        mappings["item_id_to_name"] = {}
+        mappings["characters"] = {}
+        for key in skpd_items.keys():
+            code = skpd_items[key].code
+            mappings["item_id_to_name"].update({code: {"name": key}})
+            if skpd_items[key].internal_name != None:
+                mappings["item_id_to_name"][code]["internal_name"] = skpd_items[key].internal_name
+            if skpd_items[key].category == "Character" or skpd_items[key].category == "Refract Character":
+                mappings["characters"].update({skpd_items[key].internal_name: key})
+        mappings["location_name_to_id"] = self.location_name_to_id
+        with open("skpd_mappings.json", "w") as file:
+            json.dump(mappings, file)
+
     def generate_early(self) -> None:
         self.characters = get_item_from_category("Character")
         self.starting_character = self.options.starting_character.value
@@ -67,6 +83,8 @@ class SKPDWorld(World):
             refract_char = f"{self.starting_character} B"
             if refract_char in skpd_items:
                 self.starting_character = refract_char
+        
+        #self.generate_mod_mappings()
     
     def create_regions(self) -> None:
         create_regions(self.multiworld, self.player, self.options, self.characters)
@@ -168,7 +186,6 @@ class SKPDWorld(World):
             levelorder = self.shuffle_levels()
         return {
             "StartingChar": self.starting_character,
-            "DeathLink": self.options.death_link.value,
             "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
