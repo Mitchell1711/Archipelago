@@ -1,4 +1,5 @@
 import asyncio
+import time
 from Utils import open_directory, open_file, async_start
 from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
@@ -156,6 +157,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             ctx.disable_steamworks()
         write_connection_status(ctx, True)
         run_game(ctx)
+        write_server_packets(ctx, "LocationSync")
         newpacket = True
     elif cmd == "ReceivedItems":
         if "ReceivedItems" not in ctx.server_data:
@@ -190,10 +192,7 @@ def write_server_packets(ctx: SKPDContext, cmd: str):
     with open(ctx.server_file, "w") as file:
         json.dump(ctx.server_data, file)
     with open(ctx.server_packets_file, "w") as file:
-        index = 0
-        if cmd in ctx.server_packets:
-            index = ctx.server_packets[cmd]
-        ctx.server_packets[cmd] = index + 1
+        ctx.server_packets[cmd] = time.time()
         json.dump(ctx.server_packets, file)
 
 def write_connection_status(ctx: SKPDContext, status: bool):
@@ -305,6 +304,7 @@ async def game_watcher(ctx: SKPDContext):
                 for loc in cli_data["LocationChecks"]:
                     if loc not in ctx.locations_checked:
                         checked_locations.append(loc)
+                        ctx.locations_checked.add(loc)
                         #delete the locationscout for aquired location from dict
                         if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
                             del ctx.server_data["LocationInfo"][loc]
