@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet
+from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter
 
 class StartingCharacter(Choice):
     """
@@ -156,6 +156,17 @@ class EndGoal(Choice):
     option_true_ending = 1
     default = 1
 
+class FillerWeights(OptionCounter):
+    """
+    Determines how often each filler item appears in the itempool
+    """
+    display_name = "Filler Weights"
+    default = {
+        "1000 Gems": 45,
+        "2500 Gems": 35,
+        "5000 Gems": 20
+    }
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     end_goal: EndGoal
@@ -174,3 +185,4 @@ class SKPDOptions(PerGameCommonOptions):
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
+    filler_weights: FillerWeights

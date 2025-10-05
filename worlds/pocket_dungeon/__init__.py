@@ -137,7 +137,14 @@ class SKPDWorld(World):
         traps_to_place = math.floor(total_filler * (self.options.trap_fill_percent / 100))
         for i in range(traps_to_place):
             skpd_itempool.append(self.create_item("Garbage"))
-        for i in range(total_filler - traps_to_place):
+        
+        for filler in self.options.filler_weights:
+            filler_to_place = math.floor((total_filler - traps_to_place) * (self.options.filler_weights[filler] / 100))
+            for i in range(filler_to_place):
+                skpd_itempool.append(self.create_item(filler))
+        
+        #fill last open slots due to rounding with 1000 gems
+        for i in range(locations_to_fill - len(skpd_itempool)):
             skpd_itempool.append(self.create_item("1000 Gems"))
 
         self.multiworld.itempool += skpd_itempool
