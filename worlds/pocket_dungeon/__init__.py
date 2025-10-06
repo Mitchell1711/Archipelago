@@ -1,5 +1,5 @@
 from typing import Any, Mapping
-from BaseClasses import Item
+from BaseClasses import Item, Tutorial
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, skpd_items, get_item_from_category
 from .Locations import skpd_locations, create_locations
@@ -24,6 +24,14 @@ def data_path(file_name: str):
 
 class SKPDWeb(WebWorld):
     theme = "grass"
+    setup_en = Tutorial(
+        "Multiworld Setup Guide",
+        "A guide to setting up the Shovel Knight Pocket Dungeon randomizer connected to an Archipelago Multiworld.",
+        "English",
+        "setup_en.md",
+        "setup/en",
+        ["Mitchell"]
+    )
 
 class SKPDWorld(World):
     """
