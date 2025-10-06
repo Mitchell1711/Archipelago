@@ -118,11 +118,9 @@ class SKPDWorld(World):
                 skpd_itempool.append(self.create_item("Key Fragment"))
         for i in range(self.options.hub_shop_restock_count):
             skpd_itempool.append(self.create_item("Shop Restock"))
-        for i in range(3):
-            if self.options.progression_type == 0:
+        if self.options.progression_type == 0:
+            for i in range(3):
                 skpd_itempool.append(self.create_item("Progressive Dungeon"))
-            else:
-                self.push_precollected(self.create_item("Progressive Dungeon"))
 
         for character in self.characters:
             if character != self.starting_character:
@@ -204,5 +202,6 @@ class SKPDWorld(World):
             "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
-            "EndGoal": self.options.end_goal.value
+            "EndGoal": self.options.end_goal.value,
+            "ProgressionType": self.options.progression_type
         }

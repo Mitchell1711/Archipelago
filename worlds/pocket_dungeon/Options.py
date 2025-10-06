@@ -73,13 +73,11 @@ class ProgressionType(Choice):
     """
     How to handle game progression.
     Progressive Dungeons: adds a hard cap on how far the player can progress based on the amount of progressive dungeon items they posess.
-    Key Hunt: Keys stop spawning inside of levels and will be shuffled into the multiworld, each run starts with your amount of collected keys.
     None: Progression logic is only based on the amount of relics you've collected, there's no hard cap on how far you can get in a run.
     """
     display_name = "Progression Type"
     option_progressive_dungeons = 0
-    option_key_hunt = 1
-    option_none = 2
+    option_none = 1
     default = 0
 
 class ShuffleRelics(DefaultOnToggle):

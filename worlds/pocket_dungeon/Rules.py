@@ -19,13 +19,15 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
         add_rule(dungeon_connection, lambda state, quality=i+1: relic_logic(state, player, relics, quality))
         #add progressive dungeon rule after bosses
-        if(i+1 == 3):
-            add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 1))
-        elif(i+1 == 6):
-            add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
+        if options.progression_type == 0:
+            if i+1 == 3:
+                add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 1))
+            elif i+1 == 6:
+                add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
-    dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: state.has("Progressive Dungeon", player, 3))
-    add_rule(dungeon_connection, lambda state: relic_logic(state, player, relics, 9))
+    dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: relic_logic(state, player, relics, 9))
+    if options.progression_type == 0:
+        add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 3))
 
     if(options.end_goal.value == 1):
         connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))

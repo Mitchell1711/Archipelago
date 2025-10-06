@@ -22,7 +22,6 @@ skpd_items: dict[str, SKPDItemData] = {
     "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression),
     "Key Fragment":             SKPDItemData(102, "Progression", ItemClassification.progression),
     "Progressive Dungeon":      SKPDItemData(103, "Progression", ItemClassification.progression),
-    "Key":                      SKPDItemData(293, "Progression", ItemClassification.progression),
     "Garbage":                  SKPDItemData(291, "Filler", ItemClassification.trap),
     "1000 Gems":                SKPDItemData(292, "Filler", ItemClassification.filler),
     "2500 Gems":                SKPDItemData(294, "Filler", ItemClassification.filler),
