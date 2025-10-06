@@ -26,7 +26,7 @@ You will need to escape the Pocket Dungeon! The exact goal that is considered as
 - Normal Ending: Get through the Pocket Dungeon and beat Puzzle Knight.
 - True Ending: Get through the Pocket Dungeon, collect the 4 Key Fragments and beat the Enchantress.
 
-## What does another world's item look like in SM64EX?
+## What does another world's item look like in Shovel Knight Pocket Dungeon?
 Items will show up as the Archipelago logo inside of shops, the name of the item will be given before purchasing the item and Chester will let you know how useful the item is! The Archipelago logo will appear on shrines as well, items found from boss defeats do not show up in-game.
 When picking up an item you will receive an in-game text message from 'Archipelago' that the item has been sent.
 
