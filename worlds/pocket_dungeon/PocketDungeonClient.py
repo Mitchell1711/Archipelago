@@ -20,20 +20,32 @@ class SKPDCommandProcessor(ClientCommandProcessor):
     def _cmd_savepath(self):
         """Change the directory where your savefile is located"""
         if isinstance(self.ctx, SKPDContext):
-            self.ctx.save_folder = open_directory("Save Folder", self.ctx.save_folder)
-            self.output("Changed to the following directory: " + self.ctx.save_folder)
-    
-    def _cmd_modpath(self):
-        """Change the directory where the Archipelago mod is located"""
-        if isinstance(self.ctx, SKPDContext):
-            self.ctx.mod_folder = open_directory("Mod Folder", self.ctx.mod_folder)
-            self.output("Changed to the following directory: " + self.ctx.mod_folder)
+            dir = open_directory("Save Folder", self.ctx.save_folder)
+            if dir:
+                self.ctx.save_folder = dir
+                self.output("Changed to the following directory: " + self.ctx.save_folder)
+            else:
+                self.output("Didn't change directory.")
     
     def _cmd_gamepath(self):
         """Change the directory where the game is located"""
         if isinstance(self.ctx, SKPDContext):
-            self.ctx.game_folder = open_directory(self.ctx.game_folder)
-            self.output("Changed to the following directory: " + self.ctx.game_folder)
+            dir = open_directory("Game Folder", self.ctx.game_folder)
+            if dir:
+                self.ctx.game_folder = dir
+                self.output("Changed to the following directory: " + self.ctx.game_folder)
+            else:
+                self.output("Didn't change directory.")
+    
+    def _cmd_modpath(self):
+        """Change the directory where the Archipelago mod is located"""
+        if isinstance(self.ctx, SKPDContext):
+            dir = open_directory("Mod Folder", self.ctx.mod_folder)
+            if dir:
+                self.ctx.mod_folder = dir
+                self.output("Changed to the following directory: " + self.ctx.mod_folder)
+            else:
+                self.output("Didn't change directory.")
 
 class SKPDJSONToTextParser(JSONtoTextParser):
     color_codes = {

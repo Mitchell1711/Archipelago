@@ -203,5 +203,5 @@ class SKPDWorld(World):
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
             "EndGoal": self.options.end_goal.value,
-            "ProgressionType": self.options.progression_type
+            "ProgressionType": self.options.progression_type.value
         }
