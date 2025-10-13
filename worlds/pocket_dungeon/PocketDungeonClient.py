@@ -159,18 +159,21 @@ class SKPDContext(CommonContext):
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
-    newpacket = False
     if cmd == "RoomInfo":
         ctx.curr_seed = args["seed_name"]
     elif cmd == "Connected":
         if ctx.apsession != str(ctx.slot) + ctx.curr_seed:
-            handle_savedata(ctx, args)
+            #reset communication files
+            ctx.server_data = {}
+            ctx.server_data["slot_data"] = args["slot_data"]
+            ctx.server_data["player_names"] = ctx.player_names
+            handle_savedata(ctx)
             create_stage_order(ctx, args["slot_data"]["StageOrder"])
             ctx.disable_steamworks()
         write_connection_status(ctx, True)
         run_game(ctx)
-        write_server_packets(ctx, "LocationSync")
-        newpacket = True
+        ctx.server_data["CheckedLocations"] = args["checked_locations"]
+        write_server_packets(ctx, "CheckedLocations")
     elif cmd == "ReceivedItems":
         ctx.server_data["ReceivedItems"] = []
         for item in ctx.items_received:
@@ -180,7 +183,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
                 "flags": item.flags
             })
         ctx.server_data["item_index"] = args["index"]
-        newpacket = True
+        write_server_packets(ctx, "ReceivedItems")
     elif cmd == "LocationInfo":
         if "LocationInfo" not in ctx.server_data:
             ctx.server_data["LocationInfo"] = {}
@@ -190,14 +193,11 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
                 "player": loc.player,
                 "flags": loc.flags
             }
-            newpacket = True
+            write_server_packets(ctx, "LocationInfo")
     elif cmd == "RoomUpdate":
         if "checked_locations" in args:
             ctx.server_data["CheckedLocations"] = args["checked_locations"]
-            newpacket = True
-    
-    if(newpacket):
-        write_server_packets(ctx, cmd)
+            write_server_packets(ctx, "CheckedLocations")
 
 def write_server_packets(ctx: SKPDContext, cmd: str):
     with open(ctx.server_file, "w") as file:
@@ -208,18 +208,10 @@ def write_server_packets(ctx: SKPDContext, cmd: str):
 
 def write_connection_status(ctx: SKPDContext, status: bool):
     with open(ctx.server_packets_file, "w") as file:
-        ctx.server_packets["Connected"] = status
+        ctx.server_packets["ConnectionStatus"] = status
         json.dump(ctx.server_packets, file)
 
-def handle_savedata(ctx: SKPDContext, args: dict):
-    #reset communication files
-    ctx.server_data = {"slot_data": args["slot_data"]}
-    ctx.server_data["player_names"] = ctx.player_names
-    with open(ctx.server_file, "w") as file:
-        json.dump(ctx.server_data, file)
-    with open(ctx.server_packets_file, "w") as file:
-        json.dump(ctx.server_packets, file)
-    
+def handle_savedata(ctx: SKPDContext):
     #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
     savefile_list = os.listdir(ctx.save_folder)
@@ -238,7 +230,7 @@ def handle_savedata(ctx: SKPDContext, args: dict):
         with open(ctx.save_file, "w") as file:
             ctx.base_savedata["__mod:Archipelago__"]["ap_session"] = ctx.apsession
             #set starting character
-            ctx.base_savedata["0"]["last_pindex3"] = ctx.char_id_map[args["slot_data"]["StartingChar"]]
+            ctx.base_savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["slot_data"]["StartingChar"]]
             json.dump(ctx.base_savedata, file)
         #create the seperate backup savefile
         with open(ctx.save_file+ctx.apsession, "w") as file:
