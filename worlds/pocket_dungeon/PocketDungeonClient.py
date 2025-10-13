@@ -172,15 +172,14 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
         write_server_packets(ctx, "LocationSync")
         newpacket = True
     elif cmd == "ReceivedItems":
-        if "ReceivedItems" not in ctx.server_data:
-            ctx.server_data["ReceivedItems"] = []
-        for item in args["items"]:
+        ctx.server_data["ReceivedItems"] = []
+        for item in ctx.items_received:
             ctx.server_data["ReceivedItems"].append({
                 "item": item.item,
                 "player": item.player,
                 "flags": item.flags
             })
-            ctx.server_data["item_index"] = args["index"]
+        ctx.server_data["item_index"] = args["index"]
         newpacket = True
     elif cmd == "LocationInfo":
         if "LocationInfo" not in ctx.server_data:

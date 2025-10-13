@@ -17,7 +17,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     relics = get_item_from_category("Relic")
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
-        add_rule(dungeon_connection, lambda state, quality=i+1: relic_logic(state, player, relics, quality))
+        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relics, quality))
         #add progressive dungeon rule after bosses
         if options.progression_type == 0:
             if i+1 == 3:
@@ -25,7 +25,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
             elif i+1 == 6:
                 add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
-    dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: relic_logic(state, player, relics, 9))
+    dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: relic_logic(state, player, relics, 8))
     if options.progression_type == 0:
         add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 3))
 

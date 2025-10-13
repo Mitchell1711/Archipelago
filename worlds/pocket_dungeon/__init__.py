@@ -48,6 +48,12 @@ class SKPDWorld(World):
     item_name_to_id = {name: data.code for name, data in skpd_items.items()}
     create_locations()
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
+    
+    #Tell universal tracker we don't need a YAML
+    ut_can_gen_without_yaml = True
+    @staticmethod
+    def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]: #UT support function that causes a re-generation
+        return slot_data #we don't need to do any modification to the slot data, so just return it
 
     def generate_mod_mappings(self) -> None:
         mappings = {}
@@ -58,7 +64,7 @@ class SKPDWorld(World):
             mappings["item_id_to_name"].update({code: {"name": key}})
             if skpd_items[key].internal_name != None:
                 mappings["item_id_to_name"][code]["internal_name"] = skpd_items[key].internal_name
-            if skpd_items[key].category == "Character" or skpd_items[key].category == "Refract Character":
+            if skpd_items[key].category == "Character":
                 mappings["characters"].update({skpd_items[key].internal_name: key})
         mappings["location_name_to_id"] = self.location_name_to_id
         with open("skpd_mappings.json", "w") as file:
@@ -93,6 +99,13 @@ class SKPDWorld(World):
                 self.starting_character = refract_char
         
         #self.generate_mod_mappings()
+        re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
+        if re_gen_passthrough and self.game in re_gen_passthrough:
+            slot_data = re_gen_passthrough[self.game]
+            self.options.end_goal = slot_data["EndGoal"]
+            self.options.progression_type = slot_data["ProgressionType"]
+            for option in slot_data["UTOptions"]:
+                setattr(self.options, option, slot_data["UTOptions"][option])
     
     def create_regions(self) -> None:
         create_regions(self.multiworld, self.player, self.options, self.characters)
@@ -203,5 +216,12 @@ class SKPDWorld(World):
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
             "EndGoal": self.options.end_goal.value,
-            "ProgressionType": self.options.progression_type.value
+            "ProgressionType": self.options.progression_type.value,
+            "UTOptions": self.options.as_dict(
+                "starting_character", 
+                "starting_character_is_refract", 
+                "excluded_characters", 
+                "total_characters",
+                "shuffle_relics",
+                )
         }
