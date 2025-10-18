@@ -1,6 +1,6 @@
 import asyncio
 import time
-from Utils import open_directory, open_file, async_start
+from Utils import open_directory, local_path
 from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
 from worlds import network_data_package
@@ -8,7 +8,6 @@ import logging
 import sys
 import os
 import json
-import pkgutil
 import math
 import atexit
 import subprocess
@@ -37,15 +36,15 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             else:
                 self.output("Didn't change directory.")
     
-    def _cmd_modpath(self):
-        """Change the directory where the Archipelago mod is located"""
-        if isinstance(self.ctx, SKPDContext):
-            dir = open_directory("Mod Folder", self.ctx.mod_folder)
-            if dir:
-                self.ctx.mod_folder = dir
-                self.output("Changed to the following directory: " + self.ctx.mod_folder)
-            else:
-                self.output("Didn't change directory.")
+    # def _cmd_modpath(self):
+    #     """Change the directory where the Archipelago mod is located"""
+    #     if isinstance(self.ctx, SKPDContext):
+    #         dir = open_directory("Mod Folder", self.ctx.mod_folder)
+    #         if dir:
+    #             self.ctx.mod_folder = dir
+    #             self.output("Changed to the following directory: " + self.ctx.mod_folder)
+    #         else:
+    #             self.output("Didn't change directory.")
 
 class SKPDJSONToTextParser(JSONtoTextParser):
     color_codes = {
@@ -79,10 +78,12 @@ class SKPDContext(CommonContext):
         self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.game_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon"
         self.save_file = os.path.join(self.save_folder, "save")
-        self.server_file = os.path.join(self.mod_folder, "data/server_data.json")
+        self.data_folder = os.path.join(self.mod_folder, "data")
+
+        # self.server_file = os.path.join(self.mod_folder, "data/server_data.json")
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
-        self.server_packets_file = os.path.join(self.mod_folder, "data/server_packets.json")
-        self.client_packets_file = os.path.join(self.mod_folder, "data/client_packets.json")
+        self.server_packets_file = os.path.join(self.data_folder, "server_packets.json")
+        self.client_packets_file = os.path.join(self.data_folder, "client_packets.json")
         self.stage_order_script = os.path.join(self.mod_folder, "stage_order.gml")
         self.server_packets = {}
         self.client_packets = {}
@@ -97,8 +98,8 @@ class SKPDContext(CommonContext):
         atexit.register(self.enable_steamworks)
 
         #load in default savedata
-        self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
-        self.char_id_map = json.loads(pkgutil.get_data(__name__, "data/knight_indexes.json").decode())
+        self.base_savedata = json.loads(local_path(__name__, "data/base_savedata.json").decode())
+        self.char_id_map = json.loads(local_path(__name__, "data/knight_indexes.json").decode())
     
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:
@@ -164,25 +165,29 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
     elif cmd == "Connected":
         if ctx.apsession != str(ctx.slot) + ctx.curr_seed:
             #reset communication files
+            reset_packets(ctx)
             ctx.server_data = {}
-            ctx.server_data["slot_data"] = args["slot_data"]
-            ctx.server_data["player_names"] = ctx.player_names
+            ctx.server_data["ConnectionInfo"] = {
+                "slot_data": args["slot_data"], 
+                "player_names": ctx.player_names
+                }
             handle_savedata(ctx)
-            create_stage_order(ctx, args["slot_data"]["StageOrder"])
+            #create_stage_order(ctx, args["slot_data"]["StageOrder"])
+            write_server_packets(ctx, "ConnectionInfo")
             ctx.disable_steamworks()
         write_connection_status(ctx, True)
         run_game(ctx)
         ctx.server_data["CheckedLocations"] = args["checked_locations"]
         write_server_packets(ctx, "CheckedLocations")
     elif cmd == "ReceivedItems":
-        ctx.server_data["ReceivedItems"] = []
+        itemlist = []
         for item in ctx.items_received:
-            ctx.server_data["ReceivedItems"].append({
+            itemlist.append({
                 "item": item.item,
                 "player": item.player,
                 "flags": item.flags
             })
-        ctx.server_data["item_index"] = args["index"]
+        ctx.server_data["ReceivedItems"] = itemlist
         write_server_packets(ctx, "ReceivedItems")
     elif cmd == "LocationInfo":
         if "LocationInfo" not in ctx.server_data:
@@ -200,11 +205,20 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             write_server_packets(ctx, "CheckedLocations")
 
 def write_server_packets(ctx: SKPDContext, cmd: str):
-    with open(ctx.server_file, "w") as file:
-        json.dump(ctx.server_data, file)
+    file_path = os.path.join(ctx.data_folder, f"server_{cmd}.json")
+    with open(file_path, "w") as file:
+        json.dump(ctx.server_data[cmd], file)
     with open(ctx.server_packets_file, "w") as file:
         ctx.server_packets[cmd] = time.time()
         json.dump(ctx.server_packets, file)
+
+def reset_packets(ctx: SKPDContext):
+    with open(ctx.server_packets_file, "r") as file:
+        ctx.server_packets = json.load(file)
+    for cmd in ctx.server_packets.keys():
+        file_path = os.path.join(ctx.data_folder, f"server_{cmd}.json")
+        with open(file_path, "w") as file:
+            file.write("{}")
 
 def write_connection_status(ctx: SKPDContext, status: bool):
     with open(ctx.server_packets_file, "w") as file:
@@ -230,7 +244,7 @@ def handle_savedata(ctx: SKPDContext):
         with open(ctx.save_file, "w") as file:
             ctx.base_savedata["__mod:Archipelago__"]["ap_session"] = ctx.apsession
             #set starting character
-            ctx.base_savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["slot_data"]["StartingChar"]]
+            ctx.base_savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
             json.dump(ctx.base_savedata, file)
         #create the seperate backup savefile
         with open(ctx.save_file+ctx.apsession, "w") as file:
@@ -311,12 +325,11 @@ async def game_watcher(ctx: SKPDContext):
                         #delete the locationscout for aquired location from dict
                         if "LocationInfo" in ctx.server_data and loc in ctx.server_data["LocationInfo"]:
                             del ctx.server_data["LocationInfo"][loc]
-                with open(ctx.server_file, "w") as file:
-                    json.dump(ctx.server_data, file)
-                packet.append({
-                    "cmd": "LocationChecks",
-                    "locations": checked_locations
-                })
+                if checked_locations:
+                    packet.append({
+                        "cmd": "LocationChecks",
+                        "locations": checked_locations
+                    })
             if("LocationSync" in packets_to_check):
                 locations_to_sync = []
                 for loc in cli_data["LocationSync"]:

@@ -53,10 +53,9 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     add_location(reg_sanctum, "Puzzle Knight Defeated", player)
     add_dungeon_shops(reg_sanctum, player, dungeon_shops, characters)
 
-    if(options.end_goal.value == 1):
-        reg_tower = create_region("Tower of Fate", player, world)
-        add_location(reg_tower, "Enchantress Defeated", player)
-        add_dungeon_shops(reg_tower, player, dungeon_shops, characters)
+    reg_tower = create_region("Tower of Fate", player, world)
+    add_location(reg_tower, "Enchantress Defeated", player)
+    add_dungeon_shops(reg_tower, player, dungeon_shops, characters)
 
 def create_region(name: str, player: int, world: MultiWorld) -> Region:
     region = Region(name, player, world, None)

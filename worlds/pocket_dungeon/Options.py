@@ -6,28 +6,49 @@ class StartingCharacter(Choice):
     Determines which character you start the game with.
     """
     display_name = "Starting Character"
-    option_shovel_knight = "Shovel Knight"
-    option_black_knight = "Black Knight"
-    option_shield_knight = "Shield Knight"
-    option_king_knight = "King Knight"
-    option_specter_knight = "Specter Knight"
-    option_plague_knight = "Plage Knight"
-    option_mole_knight = "Mole Knight"
-    option_treasure_knight = "Treasure Knight"
-    option_tinker_knight = "Tinker Knight"
-    option_polar_knight = "Polar Knight"
-    option_propeller_knight = "Propeller Knight"
-    option_scrap_knight = "Scrap Knight"
-    option_prism_knight = "Prism Knight"
-    option_puzzle_knight = "Puzzle Knight"
-    option_mona = "Mona"
-    option_chester = "Chester"
-    option_enchantress = "Enchantress"
-    option_quandary_sage = "Quandary Sage"
-    option_spinwulf = "Spinwulf"
-    option_schmutz = "Schmutz"
-    option_beefto = "Beefto"
+    option_shovel_knight = 0
+    option_black_knight = 1
+    option_shield_knight = 2
+    option_king_knight = 3
+    option_specter_knight = 4
+    option_plague_knight = 5
+    option_mole_knight = 6
+    option_treasure_knight = 7
+    option_tinker_knight = 8
+    option_polar_knight = 9
+    option_propeller_knight = 10
+    option_scrap_knight = 11
+    option_prism_knight = 12
+    option_puzzle_knight = 13
+    option_mona = 14
+    option_chester = 15
+    option_enchantress = 16
+    option_quandary_sage = 17
+    option_spinwulf = 18
+    option_schmutz = 19
+    option_beefto = 20
     default = option_shovel_knight
+
+    charlist = ["Shovel Knight", 
+                "Black Knight", 
+                "Shield Knight", 
+                "King Knight", 
+                "Specter Knight", 
+                "Plague Knight", 
+                "Mole Knight", 
+                "Treasure Knight",
+                "Polar Knight",
+                "Propeller Knight",
+                "Scrap Knight",
+                "Prism Knight",
+                "Puzzle Knight",
+                "Mona",
+                "Chester",
+                "Enchantress",
+                "Quandary Sage",
+                "Spinwulf",
+                "Schmutz",
+                "Beefto"]
 
 class StartingCharacterIsRefract(Toggle):
     """
@@ -143,17 +164,6 @@ class ModdedLevels(OptionSet):
     display_name = "Modded Levels"
     default = {}
 
-class EndGoal(Choice):
-    """
-    Which condition you need to reach to finish your game.
-    Normal Ending: Reach the Scholar Sanctum and defeat Puzzle Knight.
-    True Ending: Collect 4 key fragments to reach the Tower of Fate and defeat the Enchantress.
-    """
-    display_name = "End Goal"
-    option_normal_ending = 0
-    option_true_ending = 1
-    default = 1
-
 class FillerWeights(OptionCounter):
     """
     Determines how often each filler item appears in the itempool
@@ -165,9 +175,14 @@ class FillerWeights(OptionCounter):
         "5000 Gems": 20
     }
 
+class ItemShopHints(DefaultOnToggle):
+    """
+    Shows which item a shop is selling in-game before purchase.
+    """
+    display_name = "Item Shop Hints"
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
-    end_goal: EndGoal
     starting_character: StartingCharacter
     shuffle_refract_characters: ShuffleRefractCharacters
     starting_character_is_refract: StartingCharacterIsRefract
@@ -184,3 +199,4 @@ class SKPDOptions(PerGameCommonOptions):
     excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
     filler_weights: FillerWeights
+    item_shop_hints: ItemShopHints

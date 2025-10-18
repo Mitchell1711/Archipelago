@@ -50,10 +50,11 @@ class SKPDWorld(World):
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
     
     #Tell universal tracker we don't need a YAML
-    ut_can_gen_without_yaml = True
     @staticmethod
     def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]: #UT support function that causes a re-generation
         return slot_data #we don't need to do any modification to the slot data, so just return it
+    
+    ut_can_gen_without_yaml = True
 
     def generate_mod_mappings(self) -> None:
         mappings = {}
@@ -72,10 +73,10 @@ class SKPDWorld(World):
 
     def generate_early(self) -> None:
         self.characters = get_item_from_category("Character")
-        self.starting_character = self.options.starting_character.value
+        self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         for char in self.options.excluded_characters.value:
             self.characters.remove(char)
-        self.characters.remove(self.options.starting_character.value)
+        self.characters.remove(self.starting_character)
 
         #remove random characters from the character list
         char_amount = math.floor(len(self.characters) * (self.options.total_characters.value / 100))
@@ -83,7 +84,7 @@ class SKPDWorld(World):
         for i in range(to_remove):
             index = self.random.randint(0, len(self.characters) - 1)
             self.characters.pop(index)
-        self.characters.append(self.options.starting_character.value)
+        self.characters.append(self.starting_character)
         
         #add refract variants
         if self.options.shuffle_refract_characters:
@@ -102,7 +103,6 @@ class SKPDWorld(World):
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
             slot_data = re_gen_passthrough[self.game]
-            self.options.end_goal = slot_data["EndGoal"]
             self.options.progression_type = slot_data["ProgressionType"]
             for option in slot_data["UTOptions"]:
                 setattr(self.options, option, slot_data["UTOptions"][option])
@@ -116,19 +116,14 @@ class SKPDWorld(World):
     
     def set_rules(self) -> None:
         set_rules(self.multiworld, self.player, self.options)
-        if(self.options.end_goal == 0):
-            self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Puzzle Knight Defeated", self.player)
-        elif(self.options.end_goal == 1):
-            self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Enchantress Defeated", self.player)
+        self.multiworld.completion_condition[self.player] = lambda state: state.can_reach_location("Enchantress Defeated", self.player)
 
     def create_items(self) -> None:
         skpd_itempool = []
         locations_to_fill = len(self.multiworld.get_unfilled_locations(self.player))
 
-        #key pieces are only needed for true ending
-        if(self.options.end_goal == 1):
-            for i in range(4):
-                skpd_itempool.append(self.create_item("Key Fragment"))
+        for i in range(4):
+            skpd_itempool.append(self.create_item("Key Fragment"))
         for i in range(self.options.hub_shop_restock_count):
             skpd_itempool.append(self.create_item("Shop Restock"))
         if self.options.progression_type == 0:
@@ -215,8 +210,8 @@ class SKPDWorld(World):
             "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
-            "EndGoal": self.options.end_goal.value,
             "ProgressionType": self.options.progression_type.value,
+            "ItemShopHints": self.options.item_shop_hints.value,
             "UTOptions": self.options.as_dict(
                 "starting_character", 
                 "starting_character_is_refract", 

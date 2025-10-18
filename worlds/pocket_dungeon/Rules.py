@@ -29,8 +29,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     if options.progression_type == 0:
         add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 3))
 
-    if(options.end_goal.value == 1):
-        connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
+    connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
     for location in world.get_locations(player):
         set_rule(location, lambda state: True)
