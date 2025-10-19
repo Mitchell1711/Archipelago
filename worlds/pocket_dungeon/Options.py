@@ -181,6 +181,17 @@ class ItemShopHints(DefaultOnToggle):
     """
     display_name = "Item Shop Hints"
 
+class RelicLeniency(Range):
+    """
+    Multiplier that affects how strict relic logic will be.
+    If less than 1, more relics will be considered required to progress to the next dungeon.
+    The opposite holds true if set to more than 1.
+    """
+    display_name = "Relic Leniency"
+    default = 1
+    range_start = 0.25
+    range_end = 2
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -200,3 +211,4 @@ class SKPDOptions(PerGameCommonOptions):
     trap_fill_percent: TrapFillPercent
     filler_weights: FillerWeights
     item_shop_hints: ItemShopHints
+    relic_leniency: RelicLeniency
