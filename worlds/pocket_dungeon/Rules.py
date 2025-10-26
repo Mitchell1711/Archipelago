@@ -27,13 +27,10 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: 
                                          relic_logic(state, player, relics, 8, options.relic_leniency))
-    if options.progression_type == 0:
-        add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 3))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
     for location in world.get_locations(player):
-        set_rule(location, lambda state: True)
         if skpd_locations[location.name].category == "Chester Camp Shop":
             needed_restock = skpd_locations[location.name].data - 1
             if needed_restock != 0:

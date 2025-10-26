@@ -175,9 +175,11 @@ class FillerWeights(OptionCounter):
         "5000 Gems": 20
     }
 
-class ItemShopHints(DefaultOnToggle):
+class DungeonShopHints(Toggle):
     """
-    Shows which item a shop is selling in-game before purchase.
+    Toggles behavior of dungeon shops when selling archipelago items.
+    On: Dungeon shops will show which item they're selling before purchase but will cost a variable amount of gems.
+    Off: Dungeon shops won't show which item they're selling but the item can be picked up for free.
     """
     display_name = "Item Shop Hints"
 
@@ -191,6 +193,12 @@ class RelicLeniency(Range):
     default = 1
     range_start = 0.25
     range_end = 2
+
+class EarlyMealTicket(DefaultOnToggle):
+    """
+    Places the meal ticket in an early sphere to prevent characters with low health from getting stuck.
+    """
+    display_name = "Early Meal Ticket"
 
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
@@ -210,5 +218,6 @@ class SKPDOptions(PerGameCommonOptions):
     excluded_hats: ExcludedHats
     trap_fill_percent: TrapFillPercent
     filler_weights: FillerWeights
-    item_shop_hints: ItemShopHints
+    dungeon_shop_hints: DungeonShopHints
     relic_leniency: RelicLeniency
+    early_meal_ticket: EarlyMealTicket

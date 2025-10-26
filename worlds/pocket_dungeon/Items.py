@@ -257,3 +257,12 @@ skpd_items: dict[str, SKPDItemData] = {
     "Portable Sploder X":       SKPDItemData(318, "Item", ItemClassification.progression, "exploder X"),
     "Portable Sploder +":       SKPDItemData(319, "Item", ItemClassification.progression, "exploder T"),
 }
+
+item_dict = {name: data.code for name, data in skpd_items.items()}
+
+item_dict_categories: dict[str, list[str]] = {}
+for item in skpd_items:
+    category = skpd_items[item].category
+    if category not in item_dict_categories:
+        item_dict_categories[category] = []
+    item_dict_categories[category].append(item)

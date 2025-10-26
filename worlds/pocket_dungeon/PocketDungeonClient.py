@@ -11,6 +11,7 @@ import json
 import math
 import atexit
 import subprocess
+import pkgutil
 
 class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
@@ -98,8 +99,8 @@ class SKPDContext(CommonContext):
         atexit.register(self.enable_steamworks)
 
         #load in default savedata
-        self.base_savedata = json.loads(local_path(__name__, "data/base_savedata.json").decode())
-        self.char_id_map = json.loads(local_path(__name__, "data/knight_indexes.json").decode())
+        self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
+        self.char_id_map = json.loads(pkgutil.get_data(__name__, "data/knight_indexes.json").decode())
     
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:

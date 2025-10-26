@@ -31,6 +31,9 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
         reg_dungeons.append(create_region(f"Dungeon {i+1}", player, world))
         if i != 0:
             add_dungeon_shops(reg_dungeons[i], player, dungeon_shops, characters)
+        #first dungeon only has chester
+        else:
+            add_location(reg_dungeons[i], "Dungeon 1 Shop - Chester", player)
         #add shrine locations
         match i+1:
             case 3:

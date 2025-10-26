@@ -48,6 +48,13 @@ def create_locations():
     
     location_index = 200
 
+    def add_dungeon_shop_locations(location: str, characters: list):
+        nonlocal location_index
+        for character in characters:
+            if(character != "Quandary Sage"):
+                skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, "Dungeon Shop", character)})
+                location_index += 1
+
     #add chester camp upgrade locations
     stock_size = 5
     max_restocks = 20
@@ -63,16 +70,9 @@ def create_locations():
     characters = get_item_from_category("Character")
 
     for i in range(8):
-        location_index = add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters, location_index)
-    location_index = add_dungeon_shop_locations("Scholar Sanctum Shop", characters, location_index)
-    location_index = add_dungeon_shop_locations("Tower of Fate Shop", characters, location_index)
+        add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters)
+    add_dungeon_shop_locations("Scholar Sanctum Shop", characters)
+    add_dungeon_shop_locations("Tower of Fate Shop", characters)
     #special chester dungeon shop location since only he can enter a shop on the first stage
     skpd_locations.update({"Dungeon 1 Shop - Chester": SKPDLocationData(location_index, "Dungeon Shop", "Chester")})
     location_index += 1
-
-def add_dungeon_shop_locations(location: str, characters: list, location_index: int) -> int:
-    for character in characters:
-        if(character != "Quandary Sage"):
-            skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, "Dungeon Shop", character)})
-            location_index += 1
-    return location_index
