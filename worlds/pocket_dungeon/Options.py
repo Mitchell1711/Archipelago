@@ -200,6 +200,16 @@ class EarlyMealTicket(DefaultOnToggle):
     """
     display_name = "Early Meal Ticket"
 
+class StartingRelicSlotAmount(Range):
+    """
+    How many "Starting Relic Slot" items get shuffled into the itempool.
+    Each slot adds a randomized relic at the start of an adventure run. Helps with speeding up the late game a bit.
+    """
+    display_name = "Starting Relic Slot Amount"
+    default = 0
+    range_start = 0
+    range_end = 10
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -221,3 +231,4 @@ class SKPDOptions(PerGameCommonOptions):
     dungeon_shop_hints: DungeonShopHints
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
+    staring_relic_slot_amount: StartingRelicSlotAmount

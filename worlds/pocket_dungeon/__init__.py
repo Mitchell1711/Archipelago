@@ -148,6 +148,9 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(relic))
         
+        for i in range(self.options.staring_relic_slot_amount.value):
+            skpd_itempool.append(self.create_item("Starting Relic Slot"))
+        
         if self.options.shuffle_hats:
             for hat in get_item_from_category("Hat"):
                 if hat not in self.options.excluded_hats.value:
