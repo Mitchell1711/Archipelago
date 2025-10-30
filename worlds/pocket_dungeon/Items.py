@@ -44,7 +44,7 @@ skpd_items: dict[str, SKPDItemData] = {
     "Mona":                     SKPDItemData(118, "Character", ItemClassification.progression, "mona"),
     "Chester":                  SKPDItemData(119, "Character", ItemClassification.progression, "chester knight"),
     "Enchantress":              SKPDItemData(120, "Character", ItemClassification.progression, "enchantress"),
-    "Quandary Sage":            SKPDItemData(121, "Character", ItemClassification.useful,      "sage"),
+    "Quandary Sage":            SKPDItemData(121, "Character", ItemClassification.useful,      "guard knight"),
     "Spinwulf":                 SKPDItemData(122, "Character", ItemClassification.progression, "polar spinwulf"),
     "Schmutz":                  SKPDItemData(123, "Character", ItemClassification.progression, "schmutz"),
     "Beefto":                   SKPDItemData(124, "Character", ItemClassification.progression, "beefto"),
