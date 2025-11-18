@@ -37,6 +37,7 @@ class StartingCharacter(Choice):
                 "Plague Knight", 
                 "Mole Knight", 
                 "Treasure Knight",
+                "Tinker Knight",
                 "Polar Knight",
                 "Propeller Knight",
                 "Scrap Knight",
