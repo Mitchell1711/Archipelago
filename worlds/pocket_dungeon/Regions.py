@@ -25,7 +25,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
         boss_table = [[], [], []]
         for i in range(3):
             for ii in range(4):
-                rand_boss_data = bosses.pop(world.random.randrange(0, len(bosses) - 1))
+                rand_boss_data = bosses.pop(world.random.randrange(0, len(bosses)))
                 boss_table[i].append(rand_boss_data[0])
                 boss_order[i].append(rand_boss_data[1])
     else:

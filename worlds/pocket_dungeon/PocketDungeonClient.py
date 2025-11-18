@@ -280,8 +280,8 @@ def backup_savedata(ctx: SKPDContext) -> bool:
     return False
 
 def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: list[str]):
-    script_string = []
     with open(ctx.stage_order_script, "w") as file:
+        script_string = []
         if stage_order:
             formatted_stage_order = []
             for i in range(9):
@@ -300,10 +300,10 @@ def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: lis
                 else:
                     formatted_boss_order.append(-1)
             script_string.append(f"\nlvl_bosses = {json.dumps(formatted_boss_order)}")
-    if script_string:
-        file.writelines(script_string)
-    else:
-        file.write("")
+        if script_string:
+            file.writelines(script_string)
+        else:
+            file.write("")
 
 def run_game(ctx: SKPDContext):
     if ctx.game_subprocess == None or ctx.game_subprocess.poll() != None:
