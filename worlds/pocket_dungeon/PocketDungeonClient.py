@@ -173,7 +173,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
                 "player_names": ctx.player_names
                 }
             handle_savedata(ctx)
-            #create_stage_order(ctx, args["slot_data"]["StageOrder"])
+            create_stage_order(ctx, args["slot_data"]["StageOrder"], args["slot_data"]["BossOrder"])
             write_server_packets(ctx, "ConnectionInfo")
             ctx.disable_steamworks()
         write_connection_status(ctx, True)
@@ -279,15 +279,31 @@ def backup_savedata(ctx: SKPDContext) -> bool:
         return True
     return False
 
-def create_stage_order(ctx: SKPDContext, stage_order: list[str]):
+def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: list[str]):
+    script_string = []
     with open(ctx.stage_order_script, "w") as file:
         if stage_order:
             formatted_stage_order = []
             for i in range(9):
                 formatted_stage_order.append(stage_order[math.floor(i / 3)])
-            file.writelines(["adaptive_levels = true", f"\nlvl_order = {json.dumps(formatted_stage_order)}"])
+            script_string.append("adaptive_levels = true")
+            script_string.append(f"\nlvl_order = {json.dumps(formatted_stage_order)}")
         else:
             file.write("")
+        if boss_order:
+            formatted_boss_order = []
+            curr_bosses = 0
+            for i in range(9):
+                if (i+1) % 3 == 0:
+                    formatted_boss_order.append(boss_order[curr_bosses])
+                    curr_bosses += 1
+                else:
+                    formatted_boss_order.append(-1)
+            script_string.append(f"\nlvl_bosses = {json.dumps(formatted_boss_order)}")
+    if script_string:
+        file.writelines(script_string)
+    else:
+        file.write("")
 
 def run_game(ctx: SKPDContext):
     if ctx.game_subprocess == None or ctx.game_subprocess.poll() != None:

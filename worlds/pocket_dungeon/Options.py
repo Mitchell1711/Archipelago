@@ -210,6 +210,12 @@ class StartingRelicSlotAmount(Range):
     range_start = 0
     range_end = 10
 
+class RandomizeBosses(Toggle):
+    """
+    Shuffles boss locations around on the adventure mode map. 
+    """
+    display_name = "Randomize Bosses"
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -220,6 +226,7 @@ class SKPDOptions(PerGameCommonOptions):
     hub_shop_restock_count: HubShopRestockCount
     progression_type: ProgressionType
     randomize_level_order: RandomizeLevelOrder
+    randomize_bosses: RandomizeBosses
     modded_levels: ModdedLevels
     shuffle_relics: ShuffleRelics
     shuffle_hats: ShuffleHats

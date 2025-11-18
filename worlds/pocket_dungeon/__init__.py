@@ -3,7 +3,7 @@ from BaseClasses import Item, Tutorial
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, skpd_items
 from .Locations import skpd_locations, create_locations
-from .Regions import create_regions, dungeon_amount
+from .Regions import create_regions, boss_order
 from .Options import SKPDOptions
 from Options import OptionError
 from .Rules import set_rules
@@ -221,12 +221,12 @@ class SKPDWorld(World):
             "MaxHats": self.options.hat_stack_amount.value,
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
+            "BossOrder": boss_order,
             "UTOptions": self.options.as_dict(
                 "starting_character", 
                 "starting_character_is_refract", 
                 "excluded_characters", 
                 "total_characters",
-                "shuffle_relics",
-                "early_meal_ticket"
+                "randomize_bosses"
                 )
         }
