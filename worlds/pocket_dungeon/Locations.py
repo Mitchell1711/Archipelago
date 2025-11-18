@@ -22,31 +22,31 @@ skpd_locations: dict[str, SKPDLocationData] = { }
 
 def create_locations():
     skpd_locations.update({
-        "King Knight Defeated":         SKPDLocationData(101, "Boss Defeated"),
-        "Specter Knight Defeated":      SKPDLocationData(102, "Boss Defeated"),
-        "Plague Knight Defeated":       SKPDLocationData(103, "Boss Defeated"),
-        "Treasure Knight Defeated":     SKPDLocationData(104, "Boss Defeated"),
-        "Tinker Knight Defeated":       SKPDLocationData(105, "Boss Defeated"),
-        "Mole Knight Defeated":         SKPDLocationData(106, "Boss Defeated"),
-        "Scrap Knight Defeated":        SKPDLocationData(107, "Boss Defeated"),
-        "Propeller Knight Defeated":    SKPDLocationData(108, "Boss Defeated"),
-        "Polar Knight Defeated":        SKPDLocationData(109, "Boss Defeated"),
-        "Prism Knight Defeated":        SKPDLocationData(110, "Boss Defeated"),
-        "Puzzle Knight Defeated":       SKPDLocationData(111, "Boss Defeated"),
-        "Enchantress Defeated":         SKPDLocationData(112, "Boss Defeated"),
-        "Black Knight Defeated":        SKPDLocationData(113, "Boss Defeated"),
-        "Shovel Knight Defeated":       SKPDLocationData(114, "Boss Defeated"),
-        "Chester Defeated":             SKPDLocationData(115, "Boss Defeated"),
-        "Mr. Hat Defeated":             SKPDLocationData(116, "Boss Defeated"),
-        "Baz Defeated":                 SKPDLocationData(117, "Boss Defeated"),
-        "Reize Defeated":               SKPDLocationData(118, "Boss Defeated"),
-        "First Shrine":                 SKPDLocationData(125, "Shrine"),
-        "Second Shrine":                SKPDLocationData(126, "Shrine"),
-        "Third Shrine":                 SKPDLocationData(127, "Shrine"),
-        "Fourth Shrine":                SKPDLocationData(128, "Shrine"),
+        "King Knight Defeated":         SKPDLocationData(100, "Boss Defeated"),
+        "Specter Knight Defeated":      SKPDLocationData(101, "Boss Defeated"),
+        "Plague Knight Defeated":       SKPDLocationData(102, "Boss Defeated"),
+        "Treasure Knight Defeated":     SKPDLocationData(103, "Boss Defeated"),
+        "Tinker Knight Defeated":       SKPDLocationData(104, "Boss Defeated"),
+        "Mole Knight Defeated":         SKPDLocationData(105, "Boss Defeated"),
+        "Scrap Knight Defeated":        SKPDLocationData(106, "Boss Defeated"),
+        "Propeller Knight Defeated":    SKPDLocationData(107, "Boss Defeated"),
+        "Polar Knight Defeated":        SKPDLocationData(108, "Boss Defeated"),
+        "Prism Knight Defeated":        SKPDLocationData(109, "Boss Defeated"),
+        "Puzzle Knight Defeated":       SKPDLocationData(110, "Boss Defeated"),
+        "Enchantress Defeated":         SKPDLocationData(111, "Boss Defeated"),
+        "Black Knight Defeated":        SKPDLocationData(112, "Boss Defeated"),
+        "Shovel Knight Defeated":       SKPDLocationData(113, "Boss Defeated"),
+        "Chester Defeated":             SKPDLocationData(114, "Boss Defeated"),
+        "Mr. Hat Defeated":             SKPDLocationData(115, "Boss Defeated"),
+        "Baz Defeated":                 SKPDLocationData(116, "Boss Defeated"),
+        "Reize Defeated":               SKPDLocationData(117, "Boss Defeated"),
+        "First Shrine":                 SKPDLocationData(118, "Shrine"),
+        "Second Shrine":                SKPDLocationData(119, "Shrine"),
+        "Third Shrine":                 SKPDLocationData(120, "Shrine"),
+        "Fourth Shrine":                SKPDLocationData(121, "Shrine"),
     })
     
-    location_index = 200
+    location_index = 122
 
     def add_dungeon_shop_locations(location: str, characters: list):
         nonlocal location_index

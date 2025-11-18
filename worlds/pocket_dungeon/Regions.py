@@ -28,14 +28,12 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
                 rand_boss_data = bosses.pop(world.random.randrange(0, len(bosses) - 1))
                 boss_table[i].append(rand_boss_data[0])
                 boss_order[i].append(rand_boss_data[1])
-            
     else:
         boss_table = [
         ["King Knight Defeated", "Specter Knight Defeated", "Plague Knight Defeated", "Black Knight Defeated"],
         ["Treasure Knight Defeated", "Tinker Knight Defeated", "Mole Knight Defeated", "Scrap Knight Defeated"],
         ["Propeller Knight Defeated", "Polar Knight Defeated", "Prism Knight Defeated"]
     ]
-
 
     reg_menu = create_region("Menu", player, world)
     
