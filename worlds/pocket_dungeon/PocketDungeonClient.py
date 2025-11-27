@@ -227,57 +227,72 @@ def write_connection_status(ctx: SKPDContext, status: bool):
         json.dump(ctx.server_packets, file)
 
 def handle_savedata(ctx: SKPDContext):
-    #identifier for this archipelago session
     ctx.apsession = str(ctx.slot) + ctx.curr_seed
+    savedata = {}
+
+    #open up currently loaded savefile and parse data inside
+    try:
+        with open(ctx.save_file, "r") as file:
+            filestr = file.read()
+            #json data of savefiles processed by the game arent properly formatted at the end
+            if filestr[len(filestr) - 1] != "}":
+                filestr = filestr[:len(filestr) - 4] + "}"
+            savedata = json.loads(filestr)
+    except:
+        print(logger.info("No existing savefile found! Creating new file..."))
+    
+    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"]:
+        save_apsession = savedata["__mod:Archipelago__"]["ap_session"]
+        #if apsession changed copy specific bits of data over to seperate file
+        if save_apsession != ctx.apsession:
+            backup_savedata = {
+                "0": {
+                    "money": savedata["0"]["money"],
+                    "bank": savedata["0"]["bank"],
+                    "last_pindex3": savedata["0"]["last_pindex3"]
+                },
+                "__mod:Archipelago__": {}
+            }
+            for key in savedata["__mod:Archipelago__"].keys():
+                backup_savedata["__mod:Archipelago__"][key] = savedata["__mod:Archipelago__"][key]
+            with open(ctx.save_file+save_apsession+".json", "w") as file:
+                json.dump(backup_savedata, file)
+        #dont need to do anything if savefile is already prepared
+        else:
+            return
+    #in this case the savedata is either a vanilla file or there's no savefile
+    else:
+        #if there is data back that up
+        if savedata:
+            with open(ctx.save_file+"Backup", "w") as file:
+                json.dump(savedata, file)
+        #prepare base archipelago savedata
+        savedata = ctx.base_savedata
+    
+    #retrieve list of seperate savefiles
     savefile_list = os.listdir(ctx.save_folder)
 
-    if "save"+ctx.apsession in savefile_list:
-        do_copy = backup_savedata(ctx)
-        #the current apsession isn't loaded as the save yet so we need to copy the contents over from its seperate file
-        if do_copy:
-            with open(ctx.save_file+ctx.apsession, "r") as file:
-                filestr = file.read()
-            with open(ctx.save_file, "w") as file:
-                file.write(filestr)
+    #if savefile found in list copy relevant data over
+    if "save"+ctx.apsession+".json" in savefile_list:
+        with open(ctx.save_file+ctx.apsession+".json", "r") as file:
+            filestr = file.read()
+        new_savedata: dict = json.loads(filestr)
+        for key in new_savedata["__mod:Archipelago__"].keys():
+            savedata["__mod:Archipelago__"][key] = new_savedata["__mod:Archipelago__"][key]
+        for key in new_savedata["0"].keys():
+            savedata["0"][key] = new_savedata["0"][key]
+    #prepare empty savefile if current session doesn't have one yet
     else:
-        backup_savedata(ctx)
-        #create a new savefile if one isn't present
-        with open(ctx.save_file, "w") as file:
-            ctx.base_savedata["__mod:Archipelago__"]["ap_session"] = ctx.apsession
-            #set starting character
-            ctx.base_savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
-            json.dump(ctx.base_savedata, file)
-        #create the seperate backup savefile
-        with open(ctx.save_file+ctx.apsession, "w") as file:
-            json.dump(ctx.base_savedata, file)
-        
-
-def backup_savedata(ctx: SKPDContext) -> bool:
-    #check if a savefile even exists
-    if os.path.exists(ctx.save_file) == False:
-        return True
+        savedata["__mod:Archipelago__"] = {
+            "ap_session": ctx.apsession
+        }
+        savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
+        savedata["0"]["money"] = 0
+        savedata["0"]["bank"] = 0
     
-    #open up currently loaded savefile and parse data inside
-    with open(ctx.save_file, "r") as file:
-        filestr = file.read()
-        #json data of savefiles processed by the game arent properly formatted at the end
-        if filestr[len(filestr) - 1] != "}":
-            filestr = filestr[:len(filestr) - 4] + "}"
-        data = json.loads(filestr)
-    #check if the currently loaded savefile isn't already using the current ap session
-    #if it isn't copy the contents over to its own seperate save file
-    if "__mod:Archipelago__" in data and "ap_session" in data["__mod:Archipelago__"]:
-        save_apsession = data["__mod:Archipelago__"]["ap_session"]
-        if save_apsession != ctx.apsession:
-            with open(ctx.save_file+save_apsession, "w") as file_2:
-                file_2.write(filestr)
-            return True
-    #savefiles without the archipelago data are non-archipelago savefiles, back those up safely
-    else:
-        with open(ctx.save_file+"Backup", "w") as file_2:
-            file_2.write(filestr)
-        return True
-    return False
+    #write data to file
+    with open(ctx.save_file, "w") as file:
+        json.dump(savedata, file)
 
 def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: list[str]):
     with open(ctx.stage_order_script, "w") as file:
