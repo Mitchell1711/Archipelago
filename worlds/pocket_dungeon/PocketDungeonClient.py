@@ -37,36 +37,10 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             else:
                 self.output("Didn't change directory.")
     
-    # def _cmd_modpath(self):
-    #     """Change the directory where the Archipelago mod is located"""
-    #     if isinstance(self.ctx, SKPDContext):
-    #         dir = open_directory("Mod Folder", self.ctx.mod_folder)
-    #         if dir:
-    #             self.ctx.mod_folder = dir
-    #             self.output("Changed to the following directory: " + self.ctx.mod_folder)
-    #         else:
-    #             self.output("Didn't change directory.")
-
-class SKPDJSONToTextParser(JSONtoTextParser):
-    color_codes = {
-        "black": "[#000000]",
-        "red": "[#EE0000]",
-        "green": "[#00FF7F]",
-        "yellow": "[#FAFAD2]",
-        "blue": "[#6495ED]",
-        "magenta": "[#EE00EE]",
-        "cyan": "[#00EEEE]",
-        "slateblue": "[#6D8BE8]",
-        "plum": "[#AF99EF]",
-        "salmon": "[#FA8072]",
-        "white": "[#FFFFFF]",
-        "orange": "[#FF7700]",
-    }
-
-    def _handle_color(self, node: JSONMessagePart):
-        codes = node.get("color").split(";")
-        buffer = "".join(self.color_codes[code] for code in codes if code in self.color_codes)
-        return buffer + self._handle_text(node) + "[/c]"
+    def _cmd_launch_game(self):
+        """Launch Shovel Knight Pocket Dungeon manually"""
+        if isinstance(self.ctx, SKPDContext):
+            run_game(self.ctx)
     
 class SKPDContext(CommonContext):
     game = "Shovel Knight Pocket Dungeon"
@@ -94,7 +68,6 @@ class SKPDContext(CommonContext):
         self.apsession = ""
         self.curr_seed = ""
         self.loc_name_to_id = network_data_package["games"][self.game]["location_name_to_id"] # type: ignore
-        self.gamejsontotext = SKPDJSONToTextParser(self)
         self.game_subprocess: subprocess.Popen = None
         atexit.register(self.enable_steamworks)
 
@@ -125,19 +98,6 @@ class SKPDContext(CommonContext):
     
     def on_package(self, cmd: str, args: dict):
         process_package(self, cmd, args)
-
-    def on_print_json(self, args: dict):
-        super().on_print_json(args)
-        relevant = args.get("type") in ["ItemSend", "ItemCheat", "Chat", "Goal"]
-        if relevant:
-            #filter out item sending not relevant to our slot and items sent to ourselves
-            if "item" in args and not self.slot_concerns_self(args["item"].player):
-                relevant = False
-            if "item" in args and self.slot_concerns_self(args["item"].player and self.slot_concerns_self(args["receiving"])):
-                relevant = False
-            if relevant:
-                self.server_data["PrintJSON"] = self.gamejsontotext(args["data"])
-                write_server_packets(self, "PrintJSON")
     
     def disable_steamworks(self):
         try:
@@ -204,6 +164,40 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
         if "checked_locations" in args:
             ctx.server_data["CheckedLocations"] = args["checked_locations"]
             write_server_packets(ctx, "CheckedLocations")
+    elif cmd == "PrintJSON":
+        printjsondata = {}
+        if args.get("type") == "ItemSend" or args.get("type") == "ItemCheat":
+            if ctx.slot_concerns_self(args["item"].player) and not ctx.slot_concerns_self(args["receiving"]):
+                printjsondata = {
+                    "type": "ItemSend",
+                    "item": ctx.item_names.lookup_in_game(args["item"].item, ctx.slot_info[args["item"].player].game),
+                    "player": args["item"].player,
+                    "flags": args["item"].flags
+                }
+        elif args.get("type") == "Chat" or args.get("type") == "ServerChat":
+            printjsondata = {
+                "type": "Chat",
+                "text": args["message"],
+                "source": ctx.player_names[args["slot"]]
+            }
+        else:
+            textmessage = ""
+            if args.get("type") == "Goal":
+                textmessage = f"{ctx.player_names[args["slot"]]} reached their goal!"
+            elif args.get("type") == "Release":
+                textmessage = f"{ctx.player_names[args["slot"]]} released all items from their world!"
+            elif args.get("type") == "Collect":
+                textmessage = f"{ctx.player_names[args["slot"]]} collected all of their items!",
+            if textmessage != "":
+                printjsondata = {
+                    "type": "Chat",
+                    "text": textmessage,
+                    "source": "Archipelago"
+                }
+        if printjsondata:
+            ctx.server_data["PrintJSON"] = printjsondata
+            write_server_packets(ctx, "PrintJSON")
+            
 
 def write_server_packets(ctx: SKPDContext, cmd: str):
     file_path = os.path.join(ctx.data_folder, f"server_{cmd}.json")
@@ -330,8 +324,12 @@ def run_game(ctx: SKPDContext):
 async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():
         #check for updates
+        curr_packets = {}
         with open(ctx.client_packets_file, "r") as file:
-            curr_packets = json.load(file)
+            try:
+                curr_packets = json.load(file)
+            except:
+                print("Couldn't read packets, trying again...")
         packets_to_check = []
         for packet in list(curr_packets.keys()):
             if packet not in ctx.client_packets or curr_packets[packet] != ctx.client_packets[packet]:
