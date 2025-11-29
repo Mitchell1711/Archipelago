@@ -170,8 +170,8 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             if ctx.slot_concerns_self(args["item"].player) and not ctx.slot_concerns_self(args["receiving"]):
                 printjsondata = {
                     "type": "ItemSend",
-                    "item": ctx.item_names.lookup_in_game(args["item"].item, ctx.slot_info[args["item"].player].game),
-                    "player": args["item"].player,
+                    "item": ctx.item_names.lookup_in_game(args["item"].item, ctx.slot_info[args["receiving"]].game),
+                    "player": args["receiving"],
                     "flags": args["item"].flags
                 }
         elif args.get("type") == "Chat" or args.get("type") == "ServerChat":
