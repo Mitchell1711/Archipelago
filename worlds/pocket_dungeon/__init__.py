@@ -156,13 +156,14 @@ class SKPDWorld(World):
                 if hat not in self.options.excluded_hats.value:
                     skpd_itempool.append(self.create_item(hat))
         
+        #add filler to itempool
         total_filler = locations_to_fill - len(skpd_itempool)
-        traps_to_place = math.floor(total_filler * (self.options.trap_fill_percent / 100))
-        for i in range(traps_to_place):
-            skpd_itempool.append(self.create_item("Garbage"))
+        total_filler_weights = 0
+        for filler in self.options.filler_weights:
+            total_filler_weights += self.options.filler_weights[filler]
         
         for filler in self.options.filler_weights:
-            filler_to_place = math.floor((total_filler - traps_to_place) * (self.options.filler_weights[filler] / 100))
+            filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
             for i in range(filler_to_place):
                 skpd_itempool.append(self.create_item(filler))
         

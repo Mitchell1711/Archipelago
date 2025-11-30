@@ -289,8 +289,8 @@ def handle_savedata(ctx: SKPDContext):
         savedata["0"]["bank"] = 0
         for i in range(13):
             savedata["0"][f"shortcut{i} unlock"] = 0
-        savedata["0"][f"shortcut1 unlock"] = 1
-        savedata["0"]["percy_room"] = "shortcut1"
+        savedata["0"][f"shortcut0 unlock"] = 1
+        savedata["0"]["percy_room"] = "shortcut0"
     
     #write data to file
     with open(ctx.save_file, "w") as file:

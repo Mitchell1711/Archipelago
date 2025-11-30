@@ -141,15 +141,6 @@ class ExcludedHats(ItemSet):
     display_name = "Excluded Hats"
     default = {"Shop Lock Shako", "Legendary Gold Helm", "Protracted Beeto Beret"}
 
-class TrapFillPercent(Range):
-    """
-    The percentage of filler itemslots that will be replaced by traps.
-    """
-    display_name = "Trap Fill Percentage"
-    range_start = 0
-    range_end = 100
-    default = 40
-
 class RandomizeLevelOrder(Toggle):
     """
     Shuffles around level themes, does not have an effect on logic.
@@ -167,13 +158,15 @@ class ModdedLevels(OptionSet):
 
 class FillerWeights(OptionCounter):
     """
-    Determines how often each filler item appears in the itempool
+    Determines how often each filler item appears in the itempool.
+    Items like hats can be added to this list if you want them to act like a standard filler item.
     """
     display_name = "Filler Weights"
     default = {
         "1000 Gems": 45,
         "2500 Gems": 35,
-        "5000 Gems": 20
+        "5000 Gems": 20,
+        "Garbage": 50
     }
 
 class DungeonShopHints(Toggle):
@@ -234,7 +227,6 @@ class SKPDOptions(PerGameCommonOptions):
     hat_expiration_action: HatExpirationAction
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
-    trap_fill_percent: TrapFillPercent
     filler_weights: FillerWeights
     dungeon_shop_hints: DungeonShopHints
     relic_leniency: RelicLeniency
