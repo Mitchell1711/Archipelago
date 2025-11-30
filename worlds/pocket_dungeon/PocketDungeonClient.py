@@ -239,19 +239,23 @@ def handle_savedata(ctx: SKPDContext):
         save_apsession = savedata["__mod:Archipelago__"]["ap_session"]
         #if apsession changed copy specific bits of data over to seperate file
         if save_apsession != ctx.apsession:
+            main_sdata: dict = savedata["0"]
             backup_savedata = {
                 "0": {
-                    "money": savedata["0"]["money"],
-                    "bank": savedata["0"]["bank"],
-                    "last_pindex3": savedata["0"]["last_pindex3"]
+                    "money": main_sdata.get("money"),
+                    "bank": main_sdata.get("bank"),
+                    "last_pindex3": main_sdata.get("last_pindex3"),
+                    "percy_room": main_sdata.get("percy_room")
                 },
                 "__mod:Archipelago__": {}
             }
+            for i in range(13):
+                backup_savedata["0"][f"shortcut{i} unlock"] = main_sdata.get(f"shortcut{i} unlock")
             for key in savedata["__mod:Archipelago__"].keys():
                 backup_savedata["__mod:Archipelago__"][key] = savedata["__mod:Archipelago__"][key]
             with open(ctx.save_file+save_apsession+".json", "w") as file:
                 json.dump(backup_savedata, file)
-        #dont need to do anything if savefile is already prepared
+        #dont need to do anything if savefile is alreadxy prepared
         else:
             return
     #in this case the savedata is either a vanilla file or there's no savefile
@@ -283,6 +287,10 @@ def handle_savedata(ctx: SKPDContext):
         savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
         savedata["0"]["money"] = 0
         savedata["0"]["bank"] = 0
+        for i in range(13):
+            savedata["0"][f"shortcut{i} unlock"] = 0
+        savedata["0"][f"shortcut1 unlock"] = 1
+        savedata["0"]["percy_room"] = "shortcut1"
     
     #write data to file
     with open(ctx.save_file, "w") as file:
