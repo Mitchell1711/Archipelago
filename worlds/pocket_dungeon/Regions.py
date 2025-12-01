@@ -51,7 +51,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
         #create dungeon regions and add shops
         reg_dungeons.append(create_region(f"Dungeon {i+1}", player, world))
         if i != 0:
-            add_char_locations(reg_dungeons[i], player, dungeon_shops, characters)
+            add_shop_locations(reg_dungeons[i], player, dungeon_shops, characters)
         #first dungeon only has chester
         else:
             add_location(reg_dungeons[i], "Dungeon 1 Shop - Chester", player)
@@ -75,7 +75,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     #final levels never get shuffled around
     reg_sanctum = create_region("Scholar Sanctum", player, world)
     add_location(reg_sanctum, "Puzzle Knight Defeated", player)
-    add_char_locations(reg_sanctum, player, dungeon_shops, characters)
+    add_shop_locations(reg_sanctum, player, dungeon_shops, characters)
     complete_locations = get_location_from_category("Run Complete")
     add_char_locations(reg_sanctum, player, complete_locations, characters)
 
@@ -93,7 +93,12 @@ def connect_regions(world: MultiWorld, player: int, source: str, target: str, ru
 def add_location(region: Region, location: str, player: int):
     region.locations.append(SKPDLocation(player, location, skpd_locations[location].code, region))
 
-def add_char_locations(region: Region, player: int, locations: list[str], characters: list[str]):
+def add_shop_locations(region: Region, player: int, locations: list[str], characters: list[str]):
     for loc in locations:
         if region.name in loc and skpd_locations[loc].data in characters:
+            add_location(region, loc, player)
+
+def add_char_locations(region: Region, player: int, locations: list[str], characters: list[str]):
+    for loc in locations:
+        if skpd_locations[loc].data in characters:
             add_location(region, loc, player)
