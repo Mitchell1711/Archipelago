@@ -8,10 +8,6 @@ from .Options import SKPDOptions
 def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     #connect regions together
     connect_regions(world, player, "Menu", "Camp", None)
-    connect_regions(world, player, "Camp", "Castle Quandary", 
-                    lambda state:  (state.has_any(["King Knight", "Treasure Knight", "Scrap Knight", "Mole Knight"], player)) and 
-                    state.has_any(["Tinker Knight", "Propeller Knight", "Prism Knight", "Plague Knight"], player) and
-                    state.has_any(["Shovel Knight", "Black Knight", "Polar Knight"], player))
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
     relics = get_item_from_category("Relic")
@@ -39,7 +35,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(location, lambda state, dungeon=max(0, min(needed_restock, 9)): 
                          state.can_reach_region(f"Dungeon {dungeon}", player))
 
-        elif skpd_locations[location.name].category == "Dungeon Shop":
+        elif skpd_locations[location.name].category == "Dungeon Shop" or skpd_locations[location.name].category == "Run Complete":
             character = skpd_locations[location.name].data
             add_rule(location, lambda state, char=character: state.has(char, player))
             #add refract characters if enabled

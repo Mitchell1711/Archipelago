@@ -72,7 +72,9 @@ def create_locations():
     for i in range(8):
         add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters)
     add_dungeon_shop_locations("Scholar Sanctum Shop", characters)
-    add_dungeon_shop_locations("Tower of Fate Shop", characters)
+    for character in characters:
+        skpd_locations.update({f"Run Complete - {character}": SKPDLocationData(location_index, "Run Complete", character)})
+        location_index += 1
     #special chester dungeon shop location since only he can enter a shop on the first stage
     skpd_locations.update({"Dungeon 1 Shop - Chester": SKPDLocationData(location_index, "Dungeon Shop", "Chester")})
     location_index += 1
