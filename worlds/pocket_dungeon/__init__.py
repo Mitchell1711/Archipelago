@@ -133,7 +133,7 @@ class SKPDWorld(World):
         for i in range(self.options.hub_shop_restock_count):
             skpd_itempool.append(self.create_item("Shop Restock"))
         if self.options.progression_type == 0:
-            for i in range(3):
+            for i in range(2):
                 skpd_itempool.append(self.create_item("Progressive Dungeon"))
 
         for character in self.characters:
@@ -224,8 +224,6 @@ class SKPDWorld(World):
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": boss_order,
             "UTOptions": self.options.as_dict(
-                "starting_character", 
-                "starting_character_is_refract", 
                 "excluded_characters", 
                 "total_characters",
                 "randomize_bosses"
