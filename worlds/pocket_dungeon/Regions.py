@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from .Options import SKPDOptions
 
 dungeon_amount = 10
-boss_order = []
+boss_order: list[list[str]] = [[], [], []]
 
 def create_regions(world: MultiWorld, player: int, options: SKPDOptions, characters: list[str]):
     if options.randomize_bosses.value:
@@ -22,7 +22,6 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
             ["Black Knight Defeated", "black knight boss"],
             ["Shovel Knight Defeated","shovel knight boss"],
         ]
-        boss_order = [[], [], []]
         boss_table = [[], [], []]
         for i in range(3):
             for ii in range(4):

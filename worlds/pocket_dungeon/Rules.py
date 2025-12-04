@@ -12,7 +12,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     
     relics = get_item_from_category("Relic")
     characters = get_item_from_category("Character")
-    characters.update(get_item_from_category("Refract Character"))
+    characters += get_item_from_category("Refract Character")
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")

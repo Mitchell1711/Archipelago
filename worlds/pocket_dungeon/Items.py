@@ -11,16 +11,16 @@ class SKPDItemData(NamedTuple):
     internal_name: str|None = None
     data: Any = None
 
-item_categories: dict[str, set[str]] = {}
+item_categories: dict[str, list[str]] = {}
 
 def create_item_categories():
     for item in skpd_items:
         category = skpd_items[item].category
         if category not in item_categories:
-            item_categories[category] = set()
-        item_categories[category].add(item)
+            item_categories[category] = list()
+        item_categories[category].append(item)
 
-def get_item_from_category(category: str) -> set[str]:
+def get_item_from_category(category: str) -> list[str]:
     return item_categories[category]
 
 skpd_items: dict[str, SKPDItemData] = {

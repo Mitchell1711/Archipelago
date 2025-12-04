@@ -11,16 +11,16 @@ class SKPDLocationData(NamedTuple):
     category: str
     data: Any = None
 
-location_categories: dict[str, set[str]] = {}
+location_categories: dict[str, list[str]] = {}
 
 def create_location_categories():
     for loc in skpd_locations:
         category = skpd_locations[loc].category
         if category not in location_categories:
-            location_categories[category] = set()
-        location_categories[category].add(loc)
+            location_categories[category] = list()
+        location_categories[category].append(loc)
 
-def get_location_from_category(category: str) -> set[str]:
+def get_location_from_category(category: str) -> list[str]:
     return location_categories[category]
 
 skpd_locations: dict[str, SKPDLocationData] = { }

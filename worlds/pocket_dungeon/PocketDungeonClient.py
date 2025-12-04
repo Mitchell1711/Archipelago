@@ -307,7 +307,7 @@ def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: lis
             script_string.append(f"\nlvl_order = {json.dumps(formatted_stage_order)}")
         else:
             file.write("")
-        if boss_order:
+        if boss_order[0]:
             formatted_boss_order = []
             curr_bosses = 0
             for i in range(9):

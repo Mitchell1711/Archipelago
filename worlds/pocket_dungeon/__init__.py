@@ -52,8 +52,8 @@ class SKPDWorld(World):
     item_name_to_id = item_dict
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
 
-    item_name_groups = item_categories
-    location_name_groups = location_categories
+    item_name_groups = {category: set(item_categories[category]) for category in item_categories}
+    location_name_groups = {category: set(location_categories[category]) for category in location_categories}
     
     #Tell universal tracker we don't need a YAML
     @staticmethod
