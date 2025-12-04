@@ -1,8 +1,8 @@
 from typing import Any, Mapping
 from BaseClasses import Item, Tutorial
 from ..AutoWorld import World, WebWorld
-from .Items import SKPDItem, item_dict, get_item_from_category, skpd_items
-from .Locations import skpd_locations, create_locations
+from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
+from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions, boss_order
 from .Options import SKPDOptions
 from Options import OptionError
@@ -43,11 +43,17 @@ class SKPDWorld(World):
     topology_present = False
 
     options_dataclass = SKPDOptions
-    options: SKPDOptions # type: ignore
+    options: SKPDOptions
+
+    create_item_categories()
+    create_locations()
+    create_location_categories()
 
     item_name_to_id = item_dict
-    create_locations()
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
+
+    item_name_groups = item_categories
+    location_name_groups = location_categories
     
     #Tell universal tracker we don't need a YAML
     @staticmethod
@@ -72,8 +78,9 @@ class SKPDWorld(World):
             json.dump(mappings, file)
 
     def generate_early(self) -> None:
-        #universal tracker stuff
         #self.generate_mod_mappings()
+
+        #universal tracker stuff
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
             slot_data = re_gen_passthrough[self.game]
@@ -82,7 +89,7 @@ class SKPDWorld(World):
                 setattr(self.options, option, slot_data["UTOptions"][option])
         
         #prune excluded and starting character from list
-        self.characters = get_item_from_category("Character")
+        self.characters = list(get_item_from_category("Character"))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         for char in self.options.excluded_characters.value:
             self.characters.remove(char)
@@ -111,7 +118,7 @@ class SKPDWorld(World):
         
         #place early meal ticket if enabled
         if self.options.early_meal_ticket:
-            self.multiworld.local_early_items[self.player]["Meal Ticket"] = 1
+            self.multiworld.early_items[self.player]["Meal Ticket"] = 1
     
     def create_regions(self) -> None:
         create_regions(self.multiworld, self.player, self.options, self.characters)

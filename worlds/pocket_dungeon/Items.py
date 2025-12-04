@@ -11,12 +11,17 @@ class SKPDItemData(NamedTuple):
     internal_name: str|None = None
     data: Any = None
 
-def get_item_from_category(category: str) -> list[str]:
-    itemlist = []
+item_categories: dict[str, set[str]] = {}
+
+def create_item_categories():
     for item in skpd_items:
-        if skpd_items[item].category == category:
-            itemlist.append(item)
-    return itemlist
+        category = skpd_items[item].category
+        if category not in item_categories:
+            item_categories[category] = set()
+        item_categories[category].add(item)
+
+def get_item_from_category(category: str) -> set[str]:
+    return item_categories[category]
 
 skpd_items: dict[str, SKPDItemData] = {
     "Shop Restock":             SKPDItemData(101, "Progression", ItemClassification.progression),
@@ -236,10 +241,3 @@ skpd_items: dict[str, SKPDItemData] = {
 }
 
 item_dict = {name: data.code for name, data in skpd_items.items()}
-
-item_dict_categories: dict[str, list[str]] = {}
-for item in skpd_items:
-    category = skpd_items[item].category
-    if category not in item_dict_categories:
-        item_dict_categories[category] = []
-    item_dict_categories[category].append(item)

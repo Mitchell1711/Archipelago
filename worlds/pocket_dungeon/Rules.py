@@ -11,6 +11,9 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
     relics = get_item_from_category("Relic")
+    characters = get_item_from_category("Character")
+    characters.update(get_item_from_category("Refract Character"))
+
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
         add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relics, quality, options.relic_leniency))
@@ -43,9 +46,19 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 refract_char = f"{character} B"
                 if refract_char in skpd_items:
                     add_rule(location, lambda state, char=refract_char: state.has(char, player), "or")
+        
+        #bosses that are the same character as the one you're currently playing won't spawn
+        elif skpd_locations[location.name].category == "Boss Defeated":
+            character = skpd_locations[location.name].data
+            if(character is not None):
+                #remove boss character and the refract variant from full character list
+                allowed_chars = characters.copy()
+                allowed_chars.remove(character)
+                allowed_chars.remove(f"{character} B")
+                add_rule(location, lambda state: state.has_any(allowed_chars, player))
 
 #calculates whether an area is feasible by counting the quality of your acquired relics
-def relic_logic(state: CollectionState, player: int, items: list, required_quality: int, multiplier: float):
+def relic_logic(state: CollectionState, player: int, items: set, required_quality: int, multiplier: float):
     total_quality = 0
     for item in items:
         if state.has(item, player):

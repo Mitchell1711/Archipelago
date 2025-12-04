@@ -11,32 +11,37 @@ class SKPDLocationData(NamedTuple):
     category: str
     data: Any = None
 
-def get_location_from_category(category: str) -> list[str]:
-    locationlist = []
+location_categories: dict[str, set[str]] = {}
+
+def create_location_categories():
     for loc in skpd_locations:
-        if skpd_locations[loc].category == category:
-            locationlist.append(loc)
-    return locationlist
+        category = skpd_locations[loc].category
+        if category not in location_categories:
+            location_categories[category] = set()
+        location_categories[category].add(loc)
+
+def get_location_from_category(category: str) -> set[str]:
+    return location_categories[category]
 
 skpd_locations: dict[str, SKPDLocationData] = { }
 
 def create_locations():
     skpd_locations.update({
-        "King Knight Defeated":         SKPDLocationData(100, "Boss Defeated"),
-        "Specter Knight Defeated":      SKPDLocationData(101, "Boss Defeated"),
-        "Plague Knight Defeated":       SKPDLocationData(102, "Boss Defeated"),
-        "Treasure Knight Defeated":     SKPDLocationData(103, "Boss Defeated"),
-        "Tinker Knight Defeated":       SKPDLocationData(104, "Boss Defeated"),
-        "Mole Knight Defeated":         SKPDLocationData(105, "Boss Defeated"),
-        "Scrap Knight Defeated":        SKPDLocationData(106, "Boss Defeated"),
-        "Propeller Knight Defeated":    SKPDLocationData(107, "Boss Defeated"),
-        "Polar Knight Defeated":        SKPDLocationData(108, "Boss Defeated"),
-        "Prism Knight Defeated":        SKPDLocationData(109, "Boss Defeated"),
-        "Puzzle Knight Defeated":       SKPDLocationData(110, "Boss Defeated"),
-        "Enchantress Defeated":         SKPDLocationData(111, "Boss Defeated"),
-        "Black Knight Defeated":        SKPDLocationData(112, "Boss Defeated"),
-        "Shovel Knight Defeated":       SKPDLocationData(113, "Boss Defeated"),
-        "Chester Defeated":             SKPDLocationData(114, "Boss Defeated"),
+        "King Knight Defeated":         SKPDLocationData(100, "Boss Defeated", "King Knight"),
+        "Specter Knight Defeated":      SKPDLocationData(101, "Boss Defeated", "Specter Knight"),
+        "Plague Knight Defeated":       SKPDLocationData(102, "Boss Defeated", "Plague Knight"),
+        "Treasure Knight Defeated":     SKPDLocationData(103, "Boss Defeated", "Treasure Knight"),
+        "Tinker Knight Defeated":       SKPDLocationData(104, "Boss Defeated", "Tinker Knight"),
+        "Mole Knight Defeated":         SKPDLocationData(105, "Boss Defeated", "Mole Knight"),
+        "Scrap Knight Defeated":        SKPDLocationData(106, "Boss Defeated", "Scrap Knight"),
+        "Propeller Knight Defeated":    SKPDLocationData(107, "Boss Defeated", "Propeller Knight"),
+        "Polar Knight Defeated":        SKPDLocationData(108, "Boss Defeated", "Polar Knight"),
+        "Prism Knight Defeated":        SKPDLocationData(109, "Boss Defeated", "Prism Knight"),
+        "Puzzle Knight Defeated":       SKPDLocationData(110, "Boss Defeated", "Puzzle Knight"),
+        "Enchantress Defeated":         SKPDLocationData(111, "Boss Defeated", "Enchantress"),
+        "Black Knight Defeated":        SKPDLocationData(112, "Boss Defeated", "Black Knight"),
+        "Shovel Knight Defeated":       SKPDLocationData(113, "Boss Defeated", "Shovel Knight"),
+        "Chester Defeated":             SKPDLocationData(114, "Boss Defeated", "Chester"),
         "Mr. Hat Defeated":             SKPDLocationData(115, "Boss Defeated"),
         "Baz Defeated":                 SKPDLocationData(116, "Boss Defeated"),
         "Reize Defeated":               SKPDLocationData(117, "Boss Defeated"),
