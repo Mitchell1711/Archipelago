@@ -301,10 +301,15 @@ def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: lis
         script_string = []
         if stage_order:
             formatted_stage_order = []
+            shortcuts_order = []
             for i in range(9):
                 formatted_stage_order.append(stage_order[math.floor(i / 3)])
+            for stage_group in stage_order:
+                for i in range(3):
+                    shortcuts_order.append(stage_group[i])
             script_string.append("adaptive_levels = true")
             script_string.append(f"\nlvl_order = {json.dumps(formatted_stage_order)}")
+            script_string.append(f"\nshortcuts = {json.dumps(shortcuts_order)}")
         else:
             file.write("")
         if boss_order[0]:
