@@ -1,4 +1,4 @@
-from BaseClasses import MultiWorld, CollectionState
+from BaseClasses import MultiWorld, CollectionState, ItemClassification
 from ..generic.Rules import add_rule, set_rule
 from .Regions import connect_regions, dungeon_amount
 from .Locations import skpd_locations
@@ -11,12 +11,18 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
     relics = get_item_from_category("Relic")
+    relevant_relics: set[str] = set()
+    #only add relics that have relevancy to logic
+    for relic in relics:
+        if skpd_items[relic].classification == ItemClassification.progression:
+            relevant_relics.add(relic)
+    
     characters = get_item_from_category("Character")
     characters += get_item_from_category("Refract Character")
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
-        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relics, quality, options.relic_leniency))
+        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency))
         #add progressive dungeon rule after bosses
         if options.progression_type == 0:
             if i+1 == 3:
@@ -25,7 +31,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: 
-                                         relic_logic(state, player, relics, 8, options.relic_leniency))
+                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
