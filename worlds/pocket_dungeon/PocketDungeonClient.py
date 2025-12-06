@@ -12,6 +12,7 @@ import math
 import atexit
 import subprocess
 import pkgutil
+import shutil
 
 class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
@@ -42,6 +43,11 @@ class SKPDCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, SKPDContext):
             run_game(self.ctx)
     
+    def _cmd_setup_mod(self):
+        """Set up or update the Steam workshop Archipelago mod"""
+        if isinstance(self.ctx, SKPDContext):
+            install_from_workshop(self, self.ctx)
+
 class SKPDContext(CommonContext):
     game = "Shovel Knight Pocket Dungeon"
     command_processor = SKPDCommandProcessor
@@ -52,6 +58,7 @@ class SKPDContext(CommonContext):
         self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
         self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.game_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon"
+        self.workshop_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\1184760\\3619001702"
         self.save_file = os.path.join(self.save_folder, "save")
         self.data_folder = os.path.join(self.mod_folder, "data")
 
@@ -136,7 +143,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             create_stage_order(ctx, args["slot_data"]["StageOrder"], args["slot_data"]["BossOrder"])
             write_server_packets(ctx, "ConnectionInfo")
             ctx.disable_steamworks()
-        write_connection_status(ctx, True)
+        #write_connection_status(ctx, True)
         run_game(ctx)
         ctx.server_data["CheckedLocations"] = args["checked_locations"]
         write_server_packets(ctx, "CheckedLocations")
@@ -208,6 +215,8 @@ def write_server_packets(ctx: SKPDContext, cmd: str):
         json.dump(ctx.server_packets, file)
 
 def reset_packets(ctx: SKPDContext):
+    if not os.path.exists(ctx.server_packets_file):
+        return
     with open(ctx.server_packets_file, "r") as file:
         ctx.server_packets = json.load(file)
     for cmd in ctx.server_packets.keys():
@@ -334,8 +343,24 @@ def run_game(ctx: SKPDContext):
         except FileNotFoundError:
             logger.error("Couldn't find game executable, please check if the game folder path is set correctly.")
 
+def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
+    if ctx.server and ctx.server.socket:
+        cmd.output("Client is already connected to Archipelago server, please disconnect first.")
+        return
+    if not os.path.exists(ctx.workshop_folder):
+        cmd.output("Couldn't find Steam Workshop installation! Please check if the Archipelago mod has been installed.")
+        return
+    if os.path.exists(ctx.mod_folder):
+        shutil.rmtree(ctx.mod_folder)
+    shutil.copytree(ctx.workshop_folder, ctx.mod_folder)
+    cmd.output("Finished setup for the Archipelago mod.")
+
 async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():
+        #don't do anything if not connected
+        if not ctx.server or not ctx.server.socket:
+            await asyncio.sleep(0.1)
+            continue
         #check for updates
         curr_packets = {}
         with open(ctx.client_packets_file, "r") as file:
