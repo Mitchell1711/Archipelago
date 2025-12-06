@@ -1,6 +1,6 @@
 import asyncio
 import time
-from Utils import open_directory, local_path
+from Utils import open_directory, is_windows, is_macos, is_linux
 from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
 from worlds import network_data_package
@@ -350,8 +350,13 @@ def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
     if not os.path.exists(ctx.workshop_folder):
         cmd.output("Couldn't find Steam Workshop installation! Please check if the Archipelago mod has been installed.")
         return
+    #create mods folder if it doesn't exist yet
+    if not os.path.exists(os.path.join(ctx.game_folder, "mods")):
+        os.makedirs(os.path.join(ctx.game_folder, "mods"))
+    #remove old mod installation
     if os.path.exists(ctx.mod_folder):
         shutil.rmtree(ctx.mod_folder)
+    #copy mod from workshop folder
     shutil.copytree(ctx.workshop_folder, ctx.mod_folder)
     cmd.output("Finished setup for the Archipelago mod.")
 

@@ -16,7 +16,7 @@ def run_client(*args: str):
     from .PocketDungeonClient import launch
     launch_component(launch, name="SKPDClient", args=args)
 
-components.append(Component("Pocket Dungeon Client", "SKPDClient", func=run_client, component_type=Type.CLIENT))
+components.append(Component("Shovel Knight Pocket Dungeon Client", "SKPDClient", func=run_client, component_type=Type.CLIENT))
 
 def data_path(file_name: str):
     import pkgutil
