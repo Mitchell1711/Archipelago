@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, Mapping, ClassVar
 from BaseClasses import Item, Tutorial
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
@@ -10,6 +10,7 @@ from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
 import json
+import settings
 
 def run_client(*args: str):
     print("Running Pocket Dungeon Client")
@@ -21,6 +22,28 @@ components.append(Component("Shovel Knight Pocket Dungeon Client", "SKPDClient",
 def data_path(file_name: str):
     import pkgutil
     return pkgutil.get_data(__name__, "data/" + file_name)
+
+class SKPDSettings(settings.Group):
+    class SaveDirectory(settings.UserFolderPath):
+        """
+        Locates where your SKPD savefile and offline modfiles are found on your system.
+        """
+        description = "SKPD save directory"
+
+    class GameDirectory(settings.UserFolderPath):
+        """
+        Locates where your Shovel Knight Pocket Dungeon installation is found on your system.
+        """
+        description = "Shovel Knight Pocket Dungeon game directory"
+    class WorkshopDirectory(settings.UserFolderPath):
+        """
+        Locates where the Steam workshop Archipelago mod for Shovel Knight Pocket Dungeon is found on your system. 
+        """
+        description = "Workshop mod directory"
+    
+    save_directory: SaveDirectory = SaveDirectory("%APPDATA%/Yacht Club Games\\Shovel Knight Pocket Dungeon")
+    game_directory: GameDirectory = GameDirectory("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon")
+    workshop_directory: WorkshopDirectory = WorkshopDirectory("C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\1184760\\3619001702")
 
 class SKPDWeb(WebWorld):
     theme = "grass"
@@ -36,7 +59,7 @@ class SKPDWeb(WebWorld):
 class SKPDWorld(World):
     """
     Shovel Knight and the Order of No Quarter have been trapped inside of the Pocket Dungeon!
-    Help them escape by collecting 4 key fragments and facing the Enchantress at the Tower of Fate in this roguelike puzzle game.
+    Help them escape by collecting 4 key fragments and facing the Enchantress at the Tower of Fate in this roguelite action-puzzle game.
     """
     game = "Shovel Knight Pocket Dungeon"
     web = SKPDWeb()
@@ -44,6 +67,7 @@ class SKPDWorld(World):
 
     options_dataclass = SKPDOptions
     options: SKPDOptions
+    settings: SKPDSettings
 
     create_item_categories()
     create_locations()

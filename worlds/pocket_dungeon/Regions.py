@@ -22,6 +22,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
             ["Black Knight Defeated", "black knight boss"],
             ["Shovel Knight Defeated","shovel knight boss"],
         ]
+        #boss table are location names for AP, boss_order is internal ids sent through slot data to set the boss order
         boss_table = [[], [], []]
         for i in range(3):
             for ii in range(4):

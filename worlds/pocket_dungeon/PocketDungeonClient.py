@@ -1,9 +1,9 @@
 import asyncio
 import time
 from Utils import open_directory, is_windows, is_macos, is_linux
-from NetUtils import JSONMessagePart, JSONtoTextParser, color_code
 from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
 from worlds import network_data_package
+from . import SKPDWorld, SKPDSettings
 import logging
 import sys
 import os
@@ -23,6 +23,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, SKPDContext):
             dir = open_directory("Save Folder", self.ctx.save_folder)
             if dir:
+                self.ctx.game_options.update({"save_directory": dir})
                 self.ctx.save_folder = dir
                 update_paths(self.ctx)
                 self.output("Changed to the following directory: " + self.ctx.save_folder)
@@ -30,10 +31,11 @@ class SKPDCommandProcessor(ClientCommandProcessor):
                 self.output("Didn't change directory.")
     
     def _cmd_gamepath(self):
-        """Change the directory where the game is located"""
+        """Change the directory where your game installation is located"""
         if isinstance(self.ctx, SKPDContext):
             dir = open_directory("Game Folder", self.ctx.game_folder)
             if dir:
+                self.ctx.game_options.update({"game_directory": dir})
                 self.ctx.game_folder = dir
                 self.output("Changed to the following directory: " + self.ctx.game_folder)
             else:
@@ -47,6 +49,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
                 if not os.path.exists(os.path.join(dir, "mod_info.ini")):
                     self.output("Couldn't find Archipelago mod! Please set the directory to where the mod is located in the Workshop folder.")
                     return
+                self.ctx.game_options.update({"workshop_directory": dir})
                 self.ctx.workshop_folder = dir
                 self.output("Changed to the following directory: " + self.ctx.workshop_folder)
             else:
@@ -65,22 +68,25 @@ class SKPDCommandProcessor(ClientCommandProcessor):
 class SKPDContext(CommonContext):
     game = "Shovel Knight Pocket Dungeon"
     command_processor = SKPDCommandProcessor
+    game_options: SKPDSettings = SKPDWorld.settings
 
     def __init__(self, server_address: str | None = None, password: str | None = None) -> None:
         super().__init__(server_address, password)
         self.items_handling = 0b111
-        self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
-        self.game_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon"
-        self.workshop_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\1184760\\3619001702"
+
+        #setup file paths
+        self.save_folder = self.game_options.save_directory
+        self.game_folder = self.game_options.game_directory
+        self.workshop_folder = self.game_options.workshop_directory
+        #variables for relative paths
         self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.save_file = os.path.join(self.save_folder, "save")
         self.data_folder = os.path.join(self.mod_folder, "data")
-
-        # self.server_file = os.path.join(self.mod_folder, "data/server_data.json")
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
         self.server_packets_file = os.path.join(self.data_folder, "server_packets.json")
         self.client_packets_file = os.path.join(self.data_folder, "client_packets.json")
         self.stage_order_script = os.path.join(self.mod_folder, "stage_order.gml")
+
         self.server_packets = {}
         self.client_packets = {}
         self.client_data = {}
@@ -129,6 +135,8 @@ class SKPDContext(CommonContext):
                 print(logger.info("Steamworks .dll files have already been disabled."))
             else:
                 print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+        except Exception as e:
+            print(logger.error(f"Was unable to disable steamworks .dll files due to exception {e}"))
 
     def enable_steamworks(self):
         try:
@@ -139,6 +147,8 @@ class SKPDContext(CommonContext):
                 print(logger.info("Steamworks .dll files have already been enabled."))
             else:
                 print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+        except Exception as e:
+            print(logger.error(f"Was unable to enable steamworks .dll files due to exception {e}"))
 
 #update all other paths when save path gets changed
 def update_paths(ctx: SKPDContext):
@@ -149,10 +159,6 @@ def update_paths(ctx: SKPDContext):
     ctx.server_packets_file = os.path.join(ctx.data_folder, "server_packets.json")
     ctx.client_packets_file = os.path.join(ctx.data_folder, "client_packets.json")
     ctx.stage_order_script = os.path.join(ctx.mod_folder, "stage_order.gml")
-
-    print(ctx.mod_folder)
-    print(ctx.save_file)
-    print(ctx.data_folder)
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
