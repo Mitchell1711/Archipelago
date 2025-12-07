@@ -228,7 +228,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             elif args.get("type") == "Release":
                 textmessage = f"{ctx.player_names[args["slot"]]} released all items from their world!"
             elif args.get("type") == "Collect":
-                textmessage = f"{ctx.player_names[args["slot"]]} collected all of their items!",
+                textmessage = f"{ctx.player_names[args["slot"]]} collected all of their items!"
             if textmessage != "":
                 printjsondata = {
                     "type": "Chat",
