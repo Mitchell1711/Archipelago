@@ -400,7 +400,7 @@ def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
 async def game_watcher(ctx: SKPDContext):
     while not ctx.exit_event.is_set():
         #don't do anything if not connected
-        if not ctx.server or not ctx.server.socket:
+        if not ctx.server or not ctx.server.socket or not os.path.exists(ctx.client_packets_file):
             await asyncio.sleep(0.1)
             continue
         #check for updates
