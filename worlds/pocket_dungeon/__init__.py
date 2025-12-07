@@ -1,11 +1,10 @@
-from typing import Any, Mapping, ClassVar
+from typing import Any, Mapping
 from BaseClasses import Item, Tutorial
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
-from .Regions import create_regions, boss_order
+from .Regions import create_regions
 from .Options import SKPDOptions
-from Options import OptionError
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
@@ -100,10 +99,8 @@ class SKPDWorld(World):
         mappings["location_name_to_id"] = self.location_name_to_id
         with open("skpd_mappings.json", "w") as file:
             json.dump(mappings, file)
-
-    def generate_early(self) -> None:
-        #self.generate_mod_mappings()
-
+    
+    def prepare_ut(self) -> None:
         #universal tracker stuff
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
@@ -111,7 +108,8 @@ class SKPDWorld(World):
             self.options.progression_type = slot_data["ProgressionType"]
             for option in slot_data["UTOptions"]:
                 setattr(self.options, option, slot_data["UTOptions"][option])
-        
+    
+    def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
         self.characters = list(get_item_from_category("Character"))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
@@ -139,13 +137,52 @@ class SKPDWorld(World):
             refract_char = f"{self.starting_character} B"
             if refract_char in skpd_items:
                 self.starting_character = refract_char
+    
+    def randomize_bosses(self) -> None:
+        #boss table are location names for AP, boss_order is internal ids sent through slot data to set the boss order
+        self.boss_order: list[list[str]] = [[], [], []]
+        self.boss_table: list[list[str]] = [[], [], []]
+
+        if self.options.randomize_bosses.value:
+            bosses = [
+                ["King Knight Defeated", "king boss"],
+                ["Specter Knight Defeated", "specter boss"],
+                ["Plague Knight Defeated", "plague boss"],
+                ["Treasure Knight Defeated", "treasure boss"],
+                ["Tinker Knight Defeated", "tinker boss"],
+                ["Mole Knight Defeated", "mole boss"],
+                ["Scrap Knight Defeated", "scrap boss"],
+                ["Propeller Knight Defeated", "propeller boss"],
+                ["Polar Knight Defeated", "polar boss"],
+                ["Prism Knight Defeated", "prism boss"],
+                ["Black Knight Defeated", "black knight boss"],
+                ["Shovel Knight Defeated","shovel knight boss"]
+            ]
+            for i in range(3):
+                for ii in range(4):
+                    rand_boss_data = bosses.pop(self.random.randrange(0, len(bosses)))
+                    self.boss_table[i].append(rand_boss_data[0])
+                    self.boss_order[i].append(rand_boss_data[1])
+        else:
+            self.boss_table = [
+            ["King Knight Defeated", "Specter Knight Defeated", "Plague Knight Defeated", "Black Knight Defeated"],
+            ["Treasure Knight Defeated", "Tinker Knight Defeated", "Mole Knight Defeated", "Scrap Knight Defeated"],
+            ["Propeller Knight Defeated", "Polar Knight Defeated", "Prism Knight Defeated"]
+        ]
+
+    def generate_early(self) -> None:
+        #self.generate_mod_mappings()
+
+        self.prepare_ut()
+        self.handle_playable_characters()
+        self.randomize_bosses()
         
         #place early meal ticket if enabled
         if self.options.early_meal_ticket:
             self.multiworld.early_items[self.player]["Meal Ticket"] = 1
     
     def create_regions(self) -> None:
-        create_regions(self.multiworld, self.player, self.options, self.characters)
+        create_regions(self.multiworld, self.player, self.options, self.characters, self.boss_table)
     
     def create_item(self, name: str) -> Item:
         data = skpd_items[name]
@@ -253,7 +290,7 @@ class SKPDWorld(World):
             "MaxHats": self.options.hat_stack_amount.value,
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
-            "BossOrder": boss_order,
+            "BossOrder": self.boss_order,
             "UTOptions": self.options.as_dict(
                 "excluded_characters", 
                 "total_characters",

@@ -4,38 +4,8 @@ from typing import Callable, Optional
 from .Options import SKPDOptions
 
 dungeon_amount = 10
-boss_order: list[list[str]] = [[], [], []]
 
-def create_regions(world: MultiWorld, player: int, options: SKPDOptions, characters: list[str]):
-    if options.randomize_bosses.value:
-        bosses = [
-            ["King Knight Defeated", "king boss"],
-            ["Specter Knight Defeated", "specter boss"],
-            ["Plague Knight Defeated", "plague boss"],
-            ["Treasure Knight Defeated", "treasure boss"],
-            ["Tinker Knight Defeated", "tinker boss"],
-            ["Mole Knight Defeated", "mole boss"],
-            ["Scrap Knight Defeated", "scrap boss"],
-            ["Propeller Knight Defeated", "propeller boss"],
-            ["Polar Knight Defeated", "polar boss"],
-            ["Prism Knight Defeated", "prism boss"],
-            ["Black Knight Defeated", "black knight boss"],
-            ["Shovel Knight Defeated","shovel knight boss"]
-        ]
-        #boss table are location names for AP, boss_order is internal ids sent through slot data to set the boss order
-        boss_table = [[], [], []]
-        for i in range(3):
-            for ii in range(4):
-                rand_boss_data = bosses.pop(world.random.randrange(0, len(bosses)))
-                boss_table[i].append(rand_boss_data[0])
-                boss_order[i].append(rand_boss_data[1])
-    else:
-        boss_table = [
-        ["King Knight Defeated", "Specter Knight Defeated", "Plague Knight Defeated", "Black Knight Defeated"],
-        ["Treasure Knight Defeated", "Tinker Knight Defeated", "Mole Knight Defeated", "Scrap Knight Defeated"],
-        ["Propeller Knight Defeated", "Polar Knight Defeated", "Prism Knight Defeated"]
-    ]
-
+def create_regions(world: MultiWorld, player: int, options: SKPDOptions, characters: list[str], boss_table: list[list[str]]):
     reg_menu = create_region("Menu", player, world)
     
     #set up camp region
