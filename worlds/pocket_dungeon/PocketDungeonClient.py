@@ -24,6 +24,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             dir = open_directory("Save Folder", self.ctx.save_folder)
             if dir:
                 self.ctx.save_folder = dir
+                update_paths(self.ctx)
                 self.output("Changed to the following directory: " + self.ctx.save_folder)
             else:
                 self.output("Didn't change directory.")
@@ -35,6 +36,19 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             if dir:
                 self.ctx.game_folder = dir
                 self.output("Changed to the following directory: " + self.ctx.game_folder)
+            else:
+                self.output("Didn't change directory.")
+    
+    def _cmd_workshop_path(self):
+        """Change the directory where the workshop is located"""
+        if isinstance(self.ctx, SKPDContext):
+            dir = open_directory("Workshop Folder", self.ctx.workshop_folder)
+            if dir:
+                if not os.path.exists(os.path.join(dir, "mod_info.ini")):
+                    self.output("Couldn't find Archipelago mod! Please set the directory to where the mod is located in the Workshop folder.")
+                    return
+                self.ctx.workshop_folder = dir
+                self.output("Changed to the following directory: " + self.ctx.workshop_folder)
             else:
                 self.output("Didn't change directory.")
     
@@ -56,9 +70,9 @@ class SKPDContext(CommonContext):
         super().__init__(server_address, password)
         self.items_handling = 0b111
         self.save_folder = os.path.expandvars(r"%APPDATA%/Yacht Club Games/Shovel Knight Pocket Dungeon")
-        self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.game_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon"
         self.workshop_folder = "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\1184760\\3619001702"
+        self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
         self.save_file = os.path.join(self.save_folder, "save")
         self.data_folder = os.path.join(self.mod_folder, "data")
 
@@ -125,6 +139,20 @@ class SKPDContext(CommonContext):
                 print(logger.info("Steamworks .dll files have already been enabled."))
             else:
                 print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+
+#update all other paths when save path gets changed
+def update_paths(ctx: SKPDContext):
+    ctx.mod_folder = os.path.join(ctx.save_folder, "mods/Archipelago")
+    ctx.save_file = os.path.join(ctx.save_folder, "save")
+    ctx.data_folder = os.path.join(ctx.mod_folder, "data")
+    ctx.client_file = os.path.join(ctx.mod_folder, "data/client_data.json")
+    ctx.server_packets_file = os.path.join(ctx.data_folder, "server_packets.json")
+    ctx.client_packets_file = os.path.join(ctx.data_folder, "client_packets.json")
+    ctx.stage_order_script = os.path.join(ctx.mod_folder, "stage_order.gml")
+
+    print(ctx.mod_folder)
+    print(ctx.save_file)
+    print(ctx.data_folder)
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
@@ -348,11 +376,14 @@ def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
         cmd.output("Client is already connected to Archipelago server, please disconnect first.")
         return
     if not os.path.exists(ctx.workshop_folder):
-        cmd.output("Couldn't find Steam Workshop installation! Please check if the Archipelago mod has been installed.")
+        cmd.output("Couldn't find Steam Workshop installation! Please check if the Archipelago mod has been installed or use /workshop_path to change the workshop folder.")
+        return
+    if not os.path.exists(ctx.save_folder):
+        cmd.output("Couldn't find save folder! Use /savepath to set the save folder.")
         return
     #create mods folder if it doesn't exist yet
-    if not os.path.exists(os.path.join(ctx.game_folder, "mods")):
-        os.makedirs(os.path.join(ctx.game_folder, "mods"))
+    if not os.path.exists(os.path.join(ctx.save_folder, "mods")):
+        os.makedirs(os.path.join(ctx.save_folder, "mods"))
     #remove old mod installation
     if os.path.exists(ctx.mod_folder):
         shutil.rmtree(ctx.mod_folder)
