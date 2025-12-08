@@ -20,11 +20,13 @@
 #### Shovel Knight Pocket Dungeon save directory
 This needs to be set to the following directory, this can also be changed using /savepath.
 <img width="926" height="219" alt="image" src="https://github.com/user-attachments/assets/c2eb48cf-b279-4381-b172-5c29f07fea9f" />
+
 Note: you should not put it inside if the folder with your steamID, it needs to be this folder. In some cases there may be an existing savefile and other folders as well, this is not an issue.
 
 #### Shovel Knight Pocket Dungeon game directory
 This needs to be set to the following directory, this can also be changed using /gamepath.
 <img width="559" height="504" alt="image" src="https://github.com/user-attachments/assets/156c74e8-12f3-47d1-97ca-2b1c4acd4eeb" />
+
 Note: the easiest way to locate this folder is by doing the following: open Steam > right click the game on the sidebar > select properties > select installed files > click the browse... button.
 
 #### Archipelago Workshop mod directory
