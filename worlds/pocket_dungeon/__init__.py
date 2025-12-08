@@ -284,7 +284,7 @@ class SKPDWorld(World):
         if self.options.randomize_level_order:
             levelorder = self.shuffle_levels()
         return {
-            "Version": self.world_version.as_simple_string,
+            "WorldVersion": list(self.world_version),
             "StartingChar": self.starting_character,
             "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
