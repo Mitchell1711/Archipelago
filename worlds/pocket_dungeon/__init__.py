@@ -27,7 +27,7 @@ class SKPDSettings(settings.Group):
         """
         Locates where your SKPD savefile and offline modfiles are found on your system.
         """
-        description = "SKPD save directory"
+        description = "Shovel Knight Pocket Dungeon save directory"
 
     class GameDirectory(settings.UserFolderPath):
         """
@@ -38,7 +38,7 @@ class SKPDSettings(settings.Group):
         """
         Locates where the Steam workshop Archipelago mod for Shovel Knight Pocket Dungeon is found on your system. 
         """
-        description = "Workshop mod directory"
+        description = "Archipelago Workshop mod directory"
     
     save_directory: SaveDirectory = SaveDirectory("%APPDATA%/Yacht Club Games\\Shovel Knight Pocket Dungeon")
     game_directory: GameDirectory = GameDirectory("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Shovel Knight Pocket Dungeon")
@@ -284,6 +284,7 @@ class SKPDWorld(World):
         if self.options.randomize_level_order:
             levelorder = self.shuffle_levels()
         return {
+            "Version": self.world_version.as_simple_string,
             "StartingChar": self.starting_character,
             "StageOrder": levelorder,
             "HatExpiration": self.options.hat_expiration_action.value,
