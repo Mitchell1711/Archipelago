@@ -13,6 +13,7 @@ import atexit
 import subprocess
 import pkgutil
 import shutil
+from configparser import ConfigParser
 
 class SKPDCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx: CommonContext):
@@ -159,6 +160,34 @@ def update_paths(ctx: SKPDContext):
     ctx.server_packets_file = os.path.join(ctx.data_folder, "server_packets.json")
     ctx.client_packets_file = os.path.join(ctx.data_folder, "client_packets.json")
     ctx.stage_order_script = os.path.join(ctx.mod_folder, "stage_order.gml")
+
+def check_for_updates(ctx: SKPDContext):
+    if os.path.exists(ctx.mod_folder):
+        #read mod config for updates
+        workshop_config_file = os.path.join(ctx.workshop_folder, "mod_info.ini")
+        if os.path.exists(workshop_config_file):
+            config = ConfigParser()
+            config.read(workshop_config_file)
+            minor_ver_workshop = int(float(config.get("general", "minor_version").replace('"','')))
+            major_ver_workshop = int(float(config.get("general", "major_version").replace('"','')))
+        else:
+            print(logger.info("Couldn't find workshop .ini file! Check if the workshop path is setup correctly!"))
+            return
+        
+        mod_config_file = os.path.join(ctx.mod_folder, "mod_info.ini")
+        if os.path.exists(mod_config_file):
+            config = ConfigParser()
+            config.read(mod_config_file)
+            minor_ver_mod = int(float(config.get("general", "minor_version").replace('"','')))
+            major_ver_mod = int(float(config.get("general", "major_version").replace('"','')))
+        else:
+            print(logger.info("Couldn't find mod .ini file! Check if the save path is setup correctly!"))
+            return
+        
+        if(major_ver_mod < major_ver_workshop):
+            print(logger.info(f"Found a new major update from the Workshop! Current version: {major_ver_mod}.{minor_ver_mod} - New version: {major_ver_workshop}.{minor_ver_workshop}\nIf you want to update use the /setup_mod command, note that this may not be compatible with an older .apworld."))
+        elif(minor_ver_mod < minor_ver_workshop and major_ver_mod == major_ver_workshop):
+            print(logger.info(f"Found a new minor update from the Workshop! Current version: {major_ver_mod}.{minor_ver_mod} - New version: {major_ver_workshop}.{minor_ver_workshop}\nIf you want to update use the /setup_mod command."))
 
 def process_package(ctx: SKPDContext, cmd: str, args: dict):
     #print(args)
@@ -398,7 +427,14 @@ def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
     cmd.output("Finished setup for the Archipelago mod.")
 
 async def game_watcher(ctx: SKPDContext):
+    startup_timer = 0
+    did_startup = False
     while not ctx.exit_event.is_set():
+        if not did_startup:
+            if startup_timer > 2:
+                check_for_updates(ctx)
+                did_startup = True
+            startup_timer += 1
         #don't do anything if not connected
         if not ctx.server or not ctx.server.socket or not os.path.exists(ctx.client_packets_file):
             await asyncio.sleep(0.1)
