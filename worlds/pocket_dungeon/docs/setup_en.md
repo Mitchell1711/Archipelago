@@ -21,7 +21,7 @@
 This needs to be set to the following directory, this can also be changed using /savepath.
 <img width="926" height="219" alt="image" src="https://github.com/user-attachments/assets/c2eb48cf-b279-4381-b172-5c29f07fea9f" />
 
-Note: you should not put it inside if the folder with your steamID, it needs to be this folder. In some cases there may be an existing savefile and other folders as well, this is not an issue.
+Note: you should not put it inside of the folder with your steamID, it needs to be this folder. In some cases there may be an existing savefile, the Archipelago client will back this savefile up as the file "saveBackup".
 
 #### Shovel Knight Pocket Dungeon game directory
 This needs to be set to the following directory, this can also be changed using /gamepath.
