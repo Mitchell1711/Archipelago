@@ -10,6 +10,7 @@ import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
 import json
 import settings
+from Options import OptionError
 
 def run_client(*args: str):
     print("Running Pocket Dungeon Client")
@@ -114,7 +115,10 @@ class SKPDWorld(World):
         self.characters = list(get_item_from_category("Character"))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         for char in self.options.excluded_characters.value:
-            self.characters.remove(char)
+            if char == self.starting_character:
+                raise OptionError("Starting character cannot be set as excluded!")
+            else:
+                self.characters.remove(char)
         self.characters.remove(self.starting_character)
 
         #remove random characters from the character list

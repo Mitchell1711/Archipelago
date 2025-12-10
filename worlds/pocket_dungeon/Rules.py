@@ -22,7 +22,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
-        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency))
+        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency / 10))
         #add progressive dungeon rule after bosses
         if options.progression_type == 0:
             if i+1 == 3:
@@ -31,7 +31,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: 
-                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency))
+                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency / 10))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 

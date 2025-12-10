@@ -180,13 +180,13 @@ class DungeonShopHints(Toggle):
 class RelicLeniency(Range):
     """
     Multiplier that affects how strict relic logic will be.
-    If less than 1, more relics will be considered required to progress to the next dungeon.
-    The opposite holds true if set to more than 1.
+    If less than 10, more relics will be considered required to progress to the next dungeon.
+    The opposite holds true if set to more than 10.
     """
     display_name = "Relic Leniency"
-    default = 1
-    range_start = 0.25
-    range_end = 2
+    default = 10
+    range_start = 5
+    range_end = 20
 
 class EarlyMealTicket(DefaultOnToggle):
     """
