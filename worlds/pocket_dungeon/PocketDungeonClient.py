@@ -334,7 +334,10 @@ def handle_savedata(ctx: SKPDContext):
     else:
         #if there is data back that up
         if savedata:
-            with open(ctx.save_file+"Backup", "w") as file:
+            backup_number = 0
+            while os.path.exists(f"{ctx.save_file}Backup{backup_number}"):
+                backup_number += 1
+            with open(f"{ctx.save_file}Backup{backup_number}", "w") as file:
                 json.dump(savedata, file)
         #prepare base archipelago savedata
         savedata = ctx.base_savedata
