@@ -83,8 +83,8 @@ class ShuffleRefractCharacters(DefaultOnToggle):
 
 class HubShopRestockCount(Range):
     """
-    The amount of camp shop restock locations that will be added to your world.
-    Each restock adds 5 extra locations.
+    The amount of restocks Chester's camp shop will contain.
+    Each restock adds 5 extra locations to your world.
     """
     display_name = "Chester Camp Shop Restocks"
     range_start = 5
