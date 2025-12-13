@@ -1,7 +1,6 @@
 import asyncio
 import time
 from Utils import open_directory, is_windows, is_macos, is_linux
-from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled, get_base_parser, handle_url_arg, logger
 from worlds import network_data_package
 from . import SKPDWorld, SKPDSettings
 import logging
@@ -14,9 +13,15 @@ import subprocess
 import pkgutil
 import shutil
 from configparser import ConfigParser
+tracker_loaded = False
+try:
+    from worlds.tracker.TrackerClient import ClientCommandProcessor, TrackerGameContext as SuperContext, server_loop, gui_enabled, get_base_parser, logger
+    tracker_loaded = True
+except:
+    from CommonClient import ClientCommandProcessor, CommonContext as SuperContext, server_loop, gui_enabled, get_base_parser, logger
 
 class SKPDCommandProcessor(ClientCommandProcessor):
-    def __init__(self, ctx: CommonContext):
+    def __init__(self, ctx: SuperContext):
         super().__init__(ctx)
     
     def _cmd_savepath(self):
@@ -66,7 +71,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, SKPDContext):
             install_from_workshop(self, self.ctx)
 
-class SKPDContext(CommonContext):
+class SKPDContext(SuperContext):
     game = "Shovel Knight Pocket Dungeon"
     command_processor = SKPDCommandProcessor
     game_options: SKPDSettings = SKPDWorld.settings
@@ -544,6 +549,8 @@ def launch(*args):
 
         if gui_enabled:
             ctx.run_gui()
+        if tracker_loaded:
+            ctx.run_generator()
         ctx.run_cli()
 
         await ctx.exit_event.wait()
