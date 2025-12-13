@@ -128,7 +128,7 @@ class SKPDContext(SuperContext):
         await super().connect(address)
     
     def on_package(self, cmd: str, args: dict):
-        super.on_package(cmd, args)
+        super().on_package(cmd, args)
         process_package(self, cmd, args)
     
     def disable_steamworks(self):

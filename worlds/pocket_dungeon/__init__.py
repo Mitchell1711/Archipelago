@@ -115,7 +115,7 @@ class SKPDWorld(World):
         #prune excluded and starting character from list
         self.characters = list(get_item_from_category("Character"))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
-        for char in self.options.excluded_characters.value:
+        for char in self.options.excluded_characters:
             if char == self.starting_character:
                 raise OptionError("Starting character cannot be set as excluded!")
             else:
@@ -123,7 +123,7 @@ class SKPDWorld(World):
         self.characters.remove(self.starting_character)
 
         #remove random characters from the character list
-        char_amount = math.floor(len(self.characters) * (self.options.total_characters.value / 100))
+        char_amount = math.floor(len(self.characters) * (self.options.total_characters / 100))
         to_remove = len(self.characters) - char_amount
         for i in range(to_remove):
             index = self.random.randint(0, len(self.characters) - 1)
@@ -148,7 +148,7 @@ class SKPDWorld(World):
         self.boss_order: list[list[str]] = [[], [], []]
         self.boss_table: list[list[str]] = [[], [], []]
 
-        if self.options.randomize_bosses.value:
+        if self.options.randomize_bosses:
             bosses = [
                 ["King Knight Defeated", "king boss"],
                 ["Specter Knight Defeated", "specter boss"],
