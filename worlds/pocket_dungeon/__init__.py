@@ -1,5 +1,5 @@
 from typing import Any, Mapping
-from BaseClasses import Item, Tutorial
+from BaseClasses import Item, Tutorial, ItemClassification
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
@@ -85,6 +85,7 @@ class SKPDWorld(World):
         return slot_data #we don't need to do any modification to the slot data, so just return it
     
     ut_can_gen_without_yaml = True
+    glitches_item_name = "Glitched Logic"
 
     def generate_mod_mappings(self) -> None:
         mappings = {}
@@ -189,6 +190,9 @@ class SKPDWorld(World):
         create_regions(self.multiworld, self.player, self.options, self.characters, self.boss_table)
     
     def create_item(self, name: str) -> Item:
+        if name == "Glitched Logic":
+            return SKPDItem(name, ItemClassification.progression, None, self.player)
+        
         data = skpd_items[name]
         return SKPDItem(name, data.classification, data.code, self.player)
     

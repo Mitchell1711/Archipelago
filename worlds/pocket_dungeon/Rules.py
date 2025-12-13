@@ -22,7 +22,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
-        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency / 10))
+        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency.value / 10))
         #add progressive dungeon rule after bosses
         if options.progression_type == 0:
             if i+1 == 3:
@@ -31,7 +31,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: 
-                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency / 10))
+                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency.value / 10))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
@@ -42,7 +42,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(location, lambda state, amount=needed_restock: state.has("Shop Restock", player, amount))
                 #make sure players don't need to grind the first couple areas due to shop restocks
                 add_rule(location, lambda state, dungeon=max(0, min(needed_restock, 9)): 
-                         state.can_reach_region(f"Dungeon {dungeon}", player))
+                         state.has("Glitched Logic", player) or state.can_reach_region(f"Dungeon {dungeon}", player))
 
         elif skpd_locations[location.name].category == "Dungeon Shop" or skpd_locations[location.name].category == "Run Complete":
             character = skpd_locations[location.name].data
@@ -65,6 +65,9 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
 
 #calculates whether an area is feasible by counting the quality of your acquired relics
 def relic_logic(state: CollectionState, player: int, items: set, required_quality: int, multiplier: float):
+    #skip relic related logic for UT glitched logic
+    if state.has("Glitched Logic", player):
+        return True
     total_quality = 0
     for item in items:
         if state.has(item, player):
