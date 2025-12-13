@@ -206,7 +206,8 @@ class SKPDWorld(World):
 
         for i in range(4):
             skpd_itempool.append(self.create_item("Key Fragment"))
-        for i in range(self.options.hub_shop_restock_count):
+        #first restock is free
+        for i in range(self.options.hub_shop_restock_count - 1):
             skpd_itempool.append(self.create_item("Shop Restock"))
         if self.options.progression_type == 0:
             for i in range(2):
