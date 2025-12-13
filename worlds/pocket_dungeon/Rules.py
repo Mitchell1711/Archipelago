@@ -41,8 +41,8 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
             if needed_restock != 0:
                 add_rule(location, lambda state, amount=needed_restock: state.has("Shop Restock", player, amount))
                 #make sure players don't need to grind the first couple areas due to shop restocks
-                add_rule(location, lambda state, dungeon=max(0, min(needed_restock, 9)): 
-                         state.has("Glitched Logic", player) or state.can_reach_region(f"Dungeon {dungeon}", player))
+                add_rule(location, lambda state, dungeon=min(needed_restock + 1, 9): 
+                         state.can_reach_region(f"Dungeon {dungeon}", player))
 
         elif skpd_locations[location.name].category == "Dungeon Shop" or skpd_locations[location.name].category == "Run Complete":
             character = skpd_locations[location.name].data
