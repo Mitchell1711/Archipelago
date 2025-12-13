@@ -108,6 +108,7 @@ class SKPDWorld(World):
         if re_gen_passthrough and self.game in re_gen_passthrough:
             slot_data = re_gen_passthrough[self.game]
             self.options.progression_type = slot_data["ProgressionType"]
+            self.boss_table = slot_data["BossTable"]
             for option in slot_data["UTOptions"]:
                 setattr(self.options, option, slot_data["UTOptions"][option])
     
@@ -178,9 +179,9 @@ class SKPDWorld(World):
     def generate_early(self) -> None:
         #self.generate_mod_mappings()
 
-        self.prepare_ut()
         self.handle_playable_characters()
         self.randomize_bosses()
+        self.prepare_ut()
         
         #place early meal ticket if enabled
         if self.options.early_meal_ticket:
@@ -301,6 +302,7 @@ class SKPDWorld(World):
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
+            "BossTable": self.boss_table,
             "UTOptions": self.options.as_dict(
                 "excluded_characters", 
                 "total_characters",
