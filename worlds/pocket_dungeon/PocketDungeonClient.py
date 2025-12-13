@@ -307,7 +307,7 @@ def handle_savedata(ctx: SKPDContext):
     except:
         print(logger.info("No existing savefile found! Creating new file..."))
     
-    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"]:
+    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"] and savedata["__mod:Archipelago__"]["ap_session"] != 0:
         save_apsession = savedata["__mod:Archipelago__"]["ap_session"]
         #if apsession changed copy specific bits of data over to seperate file
         if save_apsession != ctx.apsession:
