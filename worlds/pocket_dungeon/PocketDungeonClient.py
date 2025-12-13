@@ -12,6 +12,7 @@ import atexit
 import subprocess
 import pkgutil
 import shutil
+from kvui import GameManager
 from configparser import ConfigParser
 tracker_loaded = False
 try:
@@ -73,6 +74,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
 
 class SKPDContext(SuperContext):
     game = "Shovel Knight Pocket Dungeon"
+    tags = {"AP"}
     command_processor = SKPDCommandProcessor
     game_options: SKPDSettings = SKPDWorld.settings
 
@@ -114,22 +116,19 @@ class SKPDContext(SuperContext):
         await self.get_username()
         await self.send_connect()
     
-    def run_gui(self):
-        from kvui import GameManager
-
-        class SKPDManager(GameManager):
-            logging_pairs = [
-                ("Client", "Archipelago")
-            ]
-            base_title = "Archipelago Pocket Dungeon Client"
-
-        self.ui = SKPDManager(self)
-        self.ui_task = asyncio.create_task(self.ui.async_run(), name="UI") # type: ignore
+    def make_gui(self) -> type[GameManager]:
+        ui = super().make_gui()
+        ui.base_title = "Archipelago Shovel Knight Pocket Dungeon Client"
+        ui.logging_pairs = [
+            ("Client", "Archipelago")
+        ]
+        return ui
     
     async def connect(self, address: str | None = None) -> None:
         await super().connect(address)
     
     def on_package(self, cmd: str, args: dict):
+        super.on_package(cmd, args)
         process_package(self, cmd, args)
     
     def disable_steamworks(self):
