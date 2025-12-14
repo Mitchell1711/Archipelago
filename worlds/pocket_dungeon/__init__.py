@@ -106,9 +106,13 @@ class SKPDWorld(World):
         #universal tracker stuff
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
+            #give ut access to all character locations
+            self.characters = get_item_from_category("Character")
+            #get slot data
             slot_data = re_gen_passthrough[self.game]
             self.options.progression_type = slot_data["ProgressionType"]
-            self.boss_table = slot_data["BossTable"]
+            if "BossTable" in slot_data:
+                self.boss_table = slot_data["BossTable"]
             for option in slot_data["UTOptions"]:
                 setattr(self.options, option, slot_data["UTOptions"][option])
     
@@ -230,7 +234,11 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
         if self.options.shuffle_hats:
-            for hat in get_item_from_category("Hat"):
+            shuffled_hats = get_item_from_category("Hat")
+            self.random.shuffle(shuffled_hats)
+            for hat in shuffled_hats:
+                if len(skpd_itempool) >= locations_to_fill:
+                    break
                 if hat not in self.options.excluded_hats.value:
                     skpd_itempool.append(self.create_item(hat))
         
