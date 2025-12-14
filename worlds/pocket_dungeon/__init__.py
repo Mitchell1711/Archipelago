@@ -113,8 +113,6 @@ class SKPDWorld(World):
             self.options.progression_type = slot_data["ProgressionType"]
             if "BossTable" in slot_data:
                 self.boss_table = slot_data["BossTable"]
-            for option in slot_data["UTOptions"]:
-                setattr(self.options, option, slot_data["UTOptions"][option])
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
@@ -310,10 +308,5 @@ class SKPDWorld(World):
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
-            "BossTable": self.boss_table,
-            "UTOptions": self.options.as_dict(
-                "excluded_characters", 
-                "total_characters",
-                "randomize_bosses"
-                )
+            "BossTable": self.boss_table
         }
