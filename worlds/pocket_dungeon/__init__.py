@@ -111,6 +111,7 @@ class SKPDWorld(World):
             #get slot data
             slot_data = re_gen_passthrough[self.game]
             self.options.progression_type = slot_data["ProgressionType"]
+            self.options.relic_leniency = slot_data["RelicLeniency"]
             if "BossTable" in slot_data:
                 self.boss_table = slot_data["BossTable"]
     
@@ -308,5 +309,6 @@ class SKPDWorld(World):
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
-            "BossTable": self.boss_table
+            "BossTable": self.boss_table,
+            "RelicLeniency": self.options.relic_leniency
         }
