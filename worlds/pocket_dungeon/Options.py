@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter
+from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup
 
 class StartingCharacter(Choice):
     """
@@ -232,3 +232,34 @@ class SKPDOptions(PerGameCommonOptions):
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
     staring_relic_slot_amount: StartingRelicSlotAmount
+
+SKPD_option_groups = [
+    OptionGroup("Character Options", [
+        StartingCharacter,
+        ShuffleRefractCharacters,
+        StartingCharacterIsRefract,
+        ExcludedCharacters,
+        TotalCharacters
+    ]),
+    OptionGroup("Progression Options", [
+        ProgressionType,
+        HubShopRestockCount,
+        ShuffleRelics,
+        EarlyMealTicket,
+        RelicLeniency
+    ]),
+    OptionGroup("Filler Options", [
+        ShuffleHats,
+        FillerWeights,
+        HatExpirationAction,
+        HatStackAmount,
+        ExcludedHats
+    ]),
+    OptionGroup("Miscellaneous Options", [
+        RandomizeLevelOrder,
+        ModdedLevels,
+        RandomizeBosses,
+        StartingRelicSlotAmount,
+        DungeonShopHints
+    ])
+]

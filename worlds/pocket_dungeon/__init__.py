@@ -4,7 +4,7 @@ from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions
-from .Options import SKPDOptions
+from .Options import SKPDOptions, SKPD_option_groups
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
@@ -47,6 +47,7 @@ class SKPDSettings(settings.Group):
 
 class SKPDWeb(WebWorld):
     theme = "grass"
+    option_groups = SKPD_option_groups
     setup_en = Tutorial(
         "Multiworld Setup Guide",
         "A guide to setting up the Shovel Knight Pocket Dungeon randomizer connected to an Archipelago Multiworld.",
@@ -78,6 +79,20 @@ class SKPDWorld(World):
 
     item_name_groups = {category: set(item_categories[category]) for category in item_categories}
     location_name_groups = {category: set(location_categories[category]) for category in location_categories}
+
+    bosses = {"king boss": "King Knight Defeated",
+                "specter boss": "Specter Knight Defeated",
+                "plague boss": "Plague Knight Defeated",
+                "treasure boss": "Treasure Knight Defeated",
+                "tinker boss": "Tinker Knight Defeated",
+                "mole boss": "Mole Knight Defeated",
+                "scrap boss": "Scrap Knight Defeated",
+                "propeller boss": "Propeller Knight Defeated",
+                "polar boss": "Polar Knight Defeated",
+                "prism boss": "Prism Knight Defeated",
+                "black knight boss": "Black Knight Defeated",
+                "shovel knight boss": "Shovel Knight Defeated"
+    }
     
     #Tell universal tracker we don't need a YAML
     @staticmethod
@@ -106,14 +121,18 @@ class SKPDWorld(World):
         #universal tracker stuff
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
-            #give ut access to all character locations
+            #give ut access to all character and shop locations
             self.characters = get_item_from_category("Character")
+            self.options.hub_shop_restock_count.value = self.options.hub_shop_restock_count.range_end
             #get slot data
             slot_data = re_gen_passthrough[self.game]
-            self.options.progression_type = slot_data["ProgressionType"]
-            self.options.relic_leniency = slot_data["RelicLeniency"]
-            if "BossTable" in slot_data:
-                self.boss_table = slot_data["BossTable"]
+            self.options.progression_type.value = slot_data.get("ProgressionType", self.options.progression_type.value)
+            self.options.relic_leniency.value = slot_data.get("RelicLeniency", self.options.relic_leniency.value)
+            #empty boss table and refill it with slot data
+            self.boss_table: list[list[str]] = [[], [], []]
+            for i in range(len(slot_data["BossOrder"])):
+                for ii in range(len(slot_data["BossOrder"][i])):
+                    self.boss_table[i].append(self.bosses[slot_data["BossOrder"][i][ii]])
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
@@ -153,25 +172,12 @@ class SKPDWorld(World):
         self.boss_table: list[list[str]] = [[], [], []]
 
         if self.options.randomize_bosses:
-            bosses = [
-                ["King Knight Defeated", "king boss"],
-                ["Specter Knight Defeated", "specter boss"],
-                ["Plague Knight Defeated", "plague boss"],
-                ["Treasure Knight Defeated", "treasure boss"],
-                ["Tinker Knight Defeated", "tinker boss"],
-                ["Mole Knight Defeated", "mole boss"],
-                ["Scrap Knight Defeated", "scrap boss"],
-                ["Propeller Knight Defeated", "propeller boss"],
-                ["Polar Knight Defeated", "polar boss"],
-                ["Prism Knight Defeated", "prism boss"],
-                ["Black Knight Defeated", "black knight boss"],
-                ["Shovel Knight Defeated","shovel knight boss"]
-            ]
             for i in range(3):
                 for ii in range(4):
-                    rand_boss_data = bosses.pop(self.random.randrange(0, len(bosses)))
-                    self.boss_table[i].append(rand_boss_data[0])
-                    self.boss_order[i].append(rand_boss_data[1])
+                    rand_boss = self.random.choice(list(self.bosses.keys()))
+                    self.boss_table[i].append(self.bosses[rand_boss])
+                    self.boss_order[i].append(rand_boss)
+                    self.bosses.pop(rand_boss)
         else:
             self.boss_table = [
             ["King Knight Defeated", "Specter Knight Defeated", "Plague Knight Defeated", "Black Knight Defeated"],
@@ -309,6 +315,5 @@ class SKPDWorld(World):
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
-            "BossTable": self.boss_table,
-            "RelicLeniency": self.options.relic_leniency
+            "RelicLeniency": self.options.relic_leniency.value
         }
