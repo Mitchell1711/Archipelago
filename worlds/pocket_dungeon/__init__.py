@@ -129,10 +129,11 @@ class SKPDWorld(World):
             self.options.progression_type.value = slot_data.get("ProgressionType", self.options.progression_type.value)
             self.options.relic_leniency.value = slot_data.get("RelicLeniency", self.options.relic_leniency.value)
             #empty boss table and refill it with slot data
-            self.boss_table: list[list[str]] = [[], [], []]
-            for i in range(len(slot_data["BossOrder"])):
-                for ii in range(len(slot_data["BossOrder"][i])):
-                    self.boss_table[i].append(self.bosses[slot_data["BossOrder"][i][ii]])
+            if slot_data["BossOrder"][0]:
+                self.boss_table: list[list[str]] = [[], [], []]
+                for i in range(len(slot_data["BossOrder"])):
+                    for ii in range(len(slot_data["BossOrder"][i])):
+                        self.boss_table[i].append(self.bosses[slot_data["BossOrder"][i][ii]])
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
