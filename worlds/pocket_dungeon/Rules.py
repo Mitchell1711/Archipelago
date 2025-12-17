@@ -61,7 +61,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 allowed_chars = characters.copy()
                 allowed_chars.remove(character)
                 allowed_chars.remove(f"{character} B")
-                add_rule(location, lambda state: state.has_any(allowed_chars, player))
+                add_rule(location, lambda state, chars=allowed_chars: state.has_any(chars, player))
 
 #calculates whether an area is feasible by counting the quality of your acquired relics
 def relic_logic(state: CollectionState, player: int, items: set, required_quality: int, multiplier: float):
