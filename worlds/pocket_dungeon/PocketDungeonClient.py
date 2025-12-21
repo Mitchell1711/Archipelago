@@ -31,6 +31,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             dir = open_directory("Save Folder", self.ctx.save_folder)
             if dir:
                 self.ctx.game_options.update({"save_directory": dir})
+                self.ctx.game_options._changed = True
                 self.ctx.save_folder = dir
                 update_paths(self.ctx)
                 self.output("Changed to the following directory: " + self.ctx.save_folder)
@@ -43,6 +44,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
             dir = open_directory("Game Folder", self.ctx.game_folder)
             if dir:
                 self.ctx.game_options.update({"game_directory": dir})
+                self.ctx.game_options._changed = True
                 self.ctx.game_folder = dir
                 self.output("Changed to the following directory: " + self.ctx.game_folder)
             else:
@@ -57,6 +59,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
                     self.output("Couldn't find Archipelago mod! Please set the directory to where the mod is located in the Workshop folder.")
                     return
                 self.ctx.game_options.update({"workshop_directory": dir})
+                self.ctx.game_options._changed = True
                 self.ctx.workshop_folder = dir
                 self.output("Changed to the following directory: " + self.ctx.workshop_folder)
             else:
