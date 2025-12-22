@@ -411,10 +411,11 @@ def create_stage_order(ctx: SKPDContext, stage_order: list[str], boss_order: lis
 
 def run_game(ctx: SKPDContext):
     if ctx.game_subprocess == None or ctx.game_subprocess.poll() != None:
-        try:
-            ctx.game_subprocess = subprocess.Popen(os.path.join(ctx.game_folder, "Shovel Knight Pocket Dungeon.exe"))
-        except FileNotFoundError:
-            logger.error("Couldn't find game executable, please check if the game folder path is set correctly.")
+        if is_windows:
+            try:
+                ctx.game_subprocess = subprocess.Popen(os.path.join(ctx.game_folder, "Shovel Knight Pocket Dungeon.exe"))
+            except FileNotFoundError:
+                logger.error("Couldn't find game executable, please check if the game folder path is set correctly.")
 
 def install_from_workshop(cmd: SKPDCommandProcessor, ctx: SKPDContext):
     if ctx.server and ctx.server.socket:
