@@ -210,6 +210,12 @@ class RandomizeBosses(Toggle):
     """
     display_name = "Randomize Bosses"
 
+class SideroomChecks(Toggle):
+    """
+    Adds sideroom clears as locations
+    """
+    display_name = "Sideroom Checks"
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -232,6 +238,7 @@ class SKPDOptions(PerGameCommonOptions):
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
     staring_relic_slot_amount: StartingRelicSlotAmount
+    sideroom_checks: SideroomChecks
 
 SKPD_option_groups = [
     OptionGroup("Character Options", [
@@ -256,6 +263,7 @@ SKPD_option_groups = [
         ExcludedHats
     ]),
     OptionGroup("Miscellaneous Options", [
+        SideroomChecks,
         RandomizeLevelOrder,
         ModdedLevels,
         RandomizeBosses,

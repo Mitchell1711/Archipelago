@@ -52,6 +52,13 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     reg_tower = create_region("Tower of Fate", player, world)
     add_location(reg_tower, "Enchantress Defeated", player)
 
+    #create sideroom regions
+    if options.sideroom_checks:
+        siderooms = get_location_from_category("Sideroom")
+        for sideroom in siderooms:
+            reg_sideroom = create_region(sideroom, player, world)
+            add_location(reg_sideroom, sideroom, player)
+
 def create_region(name: str, player: int, world: MultiWorld) -> Region:
     region = Region(name, player, world, None)
     world.regions.append(region)
