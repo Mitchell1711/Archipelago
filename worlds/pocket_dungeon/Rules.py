@@ -10,19 +10,12 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Menu", "Camp", None)
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
-    relics = get_item_from_category("Relic")
-    relevant_relics: set[str] = set()
-    #only add relics that have relevancy to logic
-    for relic in relics:
-        if skpd_items[relic].classification == ItemClassification.progression:
-            relevant_relics.add(relic)
-    
     characters = get_item_from_category("Character")
     characters += get_item_from_category("Refract Character")
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
-        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, relevant_relics, quality, options.relic_leniency.value / 10))
+        add_rule(dungeon_connection, lambda state, quality=i: relic_logic(state, player, quality))
         #add progressive dungeon rule after bosses
         if options.progression_type == 0:
             if i+1 == 3:
@@ -31,7 +24,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(dungeon_connection, lambda state: state.has("Progressive Dungeon", player, 2))
     
     dungeon_connection = connect_regions(world, player, "Dungeon 9", "Scholar Sanctum", lambda state: 
-                                         relic_logic(state, player, relevant_relics, 8, options.relic_leniency.value / 10))
+                                         relic_logic(state, player, 8))
 
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
@@ -64,12 +57,8 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(location, lambda state, chars=allowed_chars: state.has_any(chars, player))
 
 #calculates whether an area is feasible by counting the quality of your acquired relics
-def relic_logic(state: CollectionState, player: int, items: set, required_quality: int, multiplier: float):
+def relic_logic(state: CollectionState, player: int, required_quality: int):
     #skip relic related logic for UT glitched logic
     if state.has("Glitched Logic", player):
         return True
-    total_quality = 0
-    for item in items:
-        if state.has(item, player):
-            total_quality += (skpd_items[item].data * multiplier)
-    return required_quality <= total_quality
+    return required_quality <= state.skpd_relic_quality[player]

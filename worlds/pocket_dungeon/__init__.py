@@ -1,5 +1,5 @@
 from typing import Any, Mapping
-from BaseClasses import Item, Tutorial, ItemClassification
+from BaseClasses import Item, Tutorial, ItemClassification, CollectionState, MultiWorld
 from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
@@ -11,6 +11,7 @@ from worlds.LauncherComponents import Component, components, launch as launch_co
 import json
 import settings
 from Options import OptionError
+from worlds.AutoWorld import LogicMixin
 
 def run_client(*args: str):
     print("Running Pocket Dungeon Client")
@@ -318,3 +319,35 @@ class SKPDWorld(World):
             "BossOrder": self.boss_order,
             "RelicLeniency": self.options.relic_leniency.value
         }
+    
+    def collect(self, state: CollectionState, item: SKPDItem) -> bool:
+        change = super().collect(state, item)
+        if change:
+            itemdata = skpd_items[item.name]
+            #check if item is a relic
+            if itemdata.category == "Relic":
+                state.skpd_relic_quality[self.player] += itemdata.data * (self.options.relic_leniency.value / 10)
+        return change
+    
+    def remove(self, state: CollectionState, item: Item) -> bool:
+        change = super().remove(state, item)
+        if change:
+            itemdata = skpd_items[item.name]
+            #check if item is a relic
+            if itemdata.category == "Relic":
+                state.skpd_relic_quality[self.player] -= itemdata.data * (self.options.relic_leniency.value / 10)
+        return change
+
+class SKPDState(LogicMixin):
+    skpd_relic_quality: dict[int, float]  # per player
+
+    def init_mixin(self, multiworld: MultiWorld) -> None:
+        self.skpd_relic_quality = {
+            player: 0 for player in multiworld.get_game_players("Shovel Knight Pocket Dungeon")
+        }
+
+    def copy_mixin(self, new_state: CollectionState) -> CollectionState:
+        new_state.skpd_relic_quality = {
+            player: relics for player, relics in self.skpd_relic_quality.items()
+        }
+        return new_state
