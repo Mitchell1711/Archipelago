@@ -1,7 +1,7 @@
 from typing import Any, Mapping
 from BaseClasses import Item, Tutorial, ItemClassification, CollectionState, MultiWorld
 from ..AutoWorld import World, WebWorld
-from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
+from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories, SKPDItemCategory
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions
 from .Options import SKPDOptions, SKPD_option_groups
@@ -95,11 +95,7 @@ class SKPDWorld(World):
                 "shovel knight boss": "Shovel Knight Defeated"
     }
     
-    #Tell universal tracker we don't need a YAML
-    @staticmethod
-    def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]: #UT support function that causes a re-generation
-        return slot_data #we don't need to do any modification to the slot data, so just return it
-    
+    #Tell universal tracker we don't need a YAML    
     ut_can_gen_without_yaml = True
     glitches_item_name = "Glitched Logic"
 
@@ -123,7 +119,7 @@ class SKPDWorld(World):
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
             #give ut access to all character and shop locations
-            self.characters = get_item_from_category("Character")
+            self.characters = get_item_from_category(SKPDItemCategory.CHARACTER)
             self.options.hub_shop_restock_count.value = self.options.hub_shop_restock_count.range_end
             #get slot data
             slot_data = re_gen_passthrough[self.game]
@@ -138,7 +134,7 @@ class SKPDWorld(World):
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
-        self.characters = list(get_item_from_category("Character"))
+        self.characters = list(get_item_from_category(SKPDItemCategory.CHARACTER))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         for char in self.options.excluded_characters:
             if char == self.starting_character:
@@ -231,7 +227,7 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(character))
         
-        for relic in get_item_from_category("Relic"):
+        for relic in get_item_from_category(SKPDItemCategory.RELIC):
             if self.options.shuffle_relics:
                 skpd_itempool.append(self.create_item(relic))
             else:
@@ -241,7 +237,7 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
         if self.options.shuffle_hats:
-            shuffled_hats = get_item_from_category("Hat")
+            shuffled_hats = get_item_from_category(SKPDItemCategory.HAT)
             self.random.shuffle(shuffled_hats)
             for hat in shuffled_hats:
                 if len(skpd_itempool) >= locations_to_fill:

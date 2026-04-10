@@ -1,8 +1,8 @@
-from BaseClasses import MultiWorld, CollectionState, ItemClassification
+from BaseClasses import MultiWorld, CollectionState
 from ..generic.Rules import add_rule, set_rule
 from .Regions import connect_regions, dungeon_amount
 from .Locations import skpd_locations
-from .Items import get_item_from_category, skpd_items
+from .Items import get_item_from_category, skpd_items, SKPDItemCategory
 from .Options import SKPDOptions
 
 def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
@@ -10,8 +10,8 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Menu", "Camp", None)
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
-    characters = get_item_from_category("Character")
-    characters += get_item_from_category("Refract Character")
+    characters = get_item_from_category(SKPDItemCategory.CHARACTER)
+    characters += get_item_from_category(SKPDItemCategory.REFRACT_CHARACTER)
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")

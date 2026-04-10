@@ -1,5 +1,5 @@
 from BaseClasses import MultiWorld, Region, Entrance, CollectionState
-from .Locations import SKPDLocation, skpd_locations, get_location_from_category
+from .Locations import SKPDLocation, skpd_locations, get_location_from_category, SKPDLocationCategory
 from typing import Callable, Optional
 from .Options import SKPDOptions
 
@@ -10,12 +10,12 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     
     #set up camp region
     reg_camp = create_region("Camp", player, world)
-    for loc in get_location_from_category("Chester Camp Shop"):
+    for loc in get_location_from_category(SKPDLocationCategory.CHESTER_CAMP_SHOP):
         if skpd_locations[loc].data <= options.hub_shop_restock_count:
             add_location(reg_camp, loc, player)
 
     #generic dungeon, gets randomized each run by the client
-    dungeon_shops = get_location_from_category("Dungeon Shop")
+    dungeon_shops = get_location_from_category(SKPDLocationCategory.DUNGEON_SHOP)
     reg_dungeons = []
     for i in range(dungeon_amount):
         #create dungeon regions and add shops
@@ -46,7 +46,7 @@ def create_regions(world: MultiWorld, player: int, options: SKPDOptions, charact
     reg_sanctum = create_region("Scholar Sanctum", player, world)
     add_location(reg_sanctum, "Puzzle Knight Defeated", player)
     add_shop_locations(reg_sanctum, player, dungeon_shops, characters)
-    complete_locations = get_location_from_category("Run Complete")
+    complete_locations = get_location_from_category(SKPDLocationCategory.RUN_COMPLETE)
     add_char_locations(reg_sanctum, player, complete_locations, characters)
 
     reg_tower = create_region("Tower of Fate", player, world)
