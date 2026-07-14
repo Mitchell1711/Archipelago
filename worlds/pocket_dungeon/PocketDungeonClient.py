@@ -66,7 +66,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
                 self.output("Didn't change directory.")
     
     def _cmd_launch_game(self):
-        """Launch Shovel Knight Pocket Dungeon manually"""
+        """Launch Shovel Knight Pocket Dungeon"""
         if isinstance(self.ctx, SKPDContext):
             run_game(self.ctx)
     
@@ -214,7 +214,7 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             write_server_packets(ctx, "ConnectionInfo")
             ctx.disable_steamworks()
         #write_connection_status(ctx, True)
-        run_game(ctx)
+        #run_game(ctx)
         ctx.server_data["CheckedLocations"] = args["checked_locations"]
         write_server_packets(ctx, "CheckedLocations")
     elif cmd == "ReceivedItems":

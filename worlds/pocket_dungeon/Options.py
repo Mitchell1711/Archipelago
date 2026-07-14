@@ -200,7 +200,7 @@ class StartingRelicSlotAmount(Range):
     Each slot adds a randomized relic at the start of an adventure run. Helps with speeding up the late game a bit.
     """
     display_name = "Starting Relic Slot Amount"
-    default = 0
+    default = 5
     range_start = 0
     range_end = 10
 
@@ -209,6 +209,25 @@ class RandomizeBosses(Toggle):
     Shuffles boss locations around on the adventure mode map. 
     """
     display_name = "Randomize Bosses"
+
+class CampShopStartingPrice(Range):
+    """
+    How much the first stock of Chester's Camp Shop will cost.
+    Note: Shop item price is further adjusted based on the item classification.
+    """
+    display_name = "Chester Camp Shop Starting Price"
+    default = 10000
+    range_start = 0
+    range_end = 20000
+
+class CampShopPriceModifier(Range):
+    """
+    How much the price for items in Chester's Camp Shop increases with each new stock.
+    """
+    display_name = "Chester Camp Shop Price Modifier"
+    default = 2500
+    range_start = 0
+    range_end = 5000
 
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
@@ -232,6 +251,8 @@ class SKPDOptions(PerGameCommonOptions):
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
     staring_relic_slot_amount: StartingRelicSlotAmount
+    camp_shop_price_modifier: CampShopPriceModifier
+    camp_shop_starting_price: CampShopStartingPrice
 
 SKPD_option_groups = [
     OptionGroup("Character Options", [
@@ -246,7 +267,9 @@ SKPD_option_groups = [
         HubShopRestockCount,
         ShuffleRelics,
         EarlyMealTicket,
-        RelicLeniency
+        RelicLeniency,
+        CampShopStartingPrice,
+        CampShopPriceModifier
     ]),
     OptionGroup("Filler Options", [
         ShuffleHats,

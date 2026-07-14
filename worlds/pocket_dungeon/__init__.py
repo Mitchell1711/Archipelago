@@ -78,8 +78,8 @@ class SKPDWorld(World):
     item_name_to_id = item_dict
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
 
-    item_name_groups = {category: set(item_categories[category]) for category in item_categories}
-    location_name_groups = {category: set(location_categories[category]) for category in location_categories}
+    item_name_groups = {category.name: set(item_categories[category]) for category in item_categories}
+    location_name_groups = {category.name: set(location_categories[category]) for category in location_categories}
 
     bosses = {"king boss": "King Knight Defeated",
                 "specter boss": "Specter Knight Defeated",
@@ -119,7 +119,7 @@ class SKPDWorld(World):
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
             #give ut access to all character and shop locations
-            self.characters = get_item_from_category(SKPDItemCategory.CHARACTER)
+            self.characters = get_item_from_category(SKPDItemCategory.Character)
             self.options.hub_shop_restock_count.value = self.options.hub_shop_restock_count.range_end
             #get slot data
             slot_data = re_gen_passthrough[self.game]
@@ -134,7 +134,7 @@ class SKPDWorld(World):
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
-        self.characters = list(get_item_from_category(SKPDItemCategory.CHARACTER))
+        self.characters = list(get_item_from_category(SKPDItemCategory.Character))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         for char in self.options.excluded_characters:
             if char == self.starting_character:
@@ -227,7 +227,7 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(character))
         
-        for relic in get_item_from_category(SKPDItemCategory.RELIC):
+        for relic in get_item_from_category(SKPDItemCategory.Relic):
             if self.options.shuffle_relics:
                 skpd_itempool.append(self.create_item(relic))
             else:
@@ -237,7 +237,7 @@ class SKPDWorld(World):
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
         if self.options.shuffle_hats:
-            shuffled_hats = get_item_from_category(SKPDItemCategory.HAT)
+            shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
             self.random.shuffle(shuffled_hats)
             for hat in shuffled_hats:
                 if len(skpd_itempool) >= locations_to_fill:
@@ -313,24 +313,26 @@ class SKPDWorld(World):
             "ProgressionType": self.options.progression_type.value,
             "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
-            "RelicLeniency": self.options.relic_leniency.value
+            "RelicLeniency": self.options.relic_leniency.value,
+            "CampShopPriceModifier": self.options.camp_shop_price_modifier.value,
+            "CampShopStartingPrice": self.options.camp_shop_starting_price.value
         }
     
-    def collect(self, state: CollectionState, item: SKPDItem) -> bool:
+    def collect(self, state: CollectionState, item: Item) -> bool:
         change = super().collect(state, item)
-        if change:
+        if change and item.name != "Glitched Logic":
             itemdata = skpd_items[item.name]
             #check if item is a relic
-            if itemdata.category == "Relic":
+            if itemdata.category == SKPDItemCategory.Relic:
                 state.skpd_relic_quality[self.player] += itemdata.data * (self.options.relic_leniency.value / 10)
         return change
     
     def remove(self, state: CollectionState, item: Item) -> bool:
         change = super().remove(state, item)
-        if change:
+        if change and item.name != "Glitched Logic":
             itemdata = skpd_items[item.name]
             #check if item is a relic
-            if itemdata.category == "Relic":
+            if itemdata.category == SKPDItemCategory.Relic:
                 state.skpd_relic_quality[self.player] -= itemdata.data * (self.options.relic_leniency.value / 10)
         return change
 

@@ -1,7 +1,7 @@
 from BaseClasses import MultiWorld, CollectionState
 from ..generic.Rules import add_rule, set_rule
 from .Regions import connect_regions, dungeon_amount
-from .Locations import skpd_locations
+from .Locations import skpd_locations, SKPDLocationCategory
 from .Items import get_item_from_category, skpd_items, SKPDItemCategory
 from .Options import SKPDOptions
 
@@ -10,8 +10,8 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Menu", "Camp", None)
     connect_regions(world, player, "Camp", "Dungeon 1", None)
     
-    characters = get_item_from_category(SKPDItemCategory.CHARACTER)
-    characters += get_item_from_category(SKPDItemCategory.REFRACT_CHARACTER)
+    characters = get_item_from_category(SKPDItemCategory.Character)
+    characters += get_item_from_category(SKPDItemCategory.Refract_Character)
 
     for i in range(dungeon_amount - 1):
         dungeon_connection = connect_regions(world, player, f"Dungeon {i+1}", f"Dungeon {i+2}")
@@ -29,7 +29,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
     connect_regions(world, player, "Scholar Sanctum", "Tower of Fate", lambda state: state.has("Key Fragment", player, 4))
 
     for location in world.get_locations(player):
-        if skpd_locations[location.name].category == "Chester Camp Shop":
+        if skpd_locations[location.name].category == SKPDLocationCategory.Chester_Camp_Shop:
             needed_restock = skpd_locations[location.name].data - 1
             if needed_restock != 0:
                 add_rule(location, lambda state, amount=needed_restock: state.has("Shop Restock", player, amount))
@@ -37,7 +37,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(location, lambda state, dungeon=min(needed_restock + 1, 9): 
                          state.has("Glitched Logic", player) or state.can_reach_region(f"Dungeon {dungeon}", player))
 
-        elif skpd_locations[location.name].category == "Dungeon Shop" or skpd_locations[location.name].category == "Run Complete":
+        elif skpd_locations[location.name].category == SKPDLocationCategory.Dungeon_Shop or skpd_locations[location.name].category == SKPDLocationCategory.Run_Complete:
             character = skpd_locations[location.name].data
             add_rule(location, lambda state, char=character: state.has(char, player))
             #add refract characters if enabled
@@ -47,7 +47,7 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                     add_rule(location, lambda state, char=refract_char: state.has(char, player), "or")
         
         #bosses that are the same character as the one you're currently playing won't spawn
-        elif skpd_locations[location.name].category == "Boss Defeated":
+        elif skpd_locations[location.name].category == SKPDLocationCategory.Boss_Defeated:
             character = skpd_locations[location.name].data
             if(character is not None):
                 #remove boss character and the refract variant from full character list
