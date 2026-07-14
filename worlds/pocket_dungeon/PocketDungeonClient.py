@@ -135,28 +135,38 @@ class SKPDContext(SuperContext):
         process_package(self, cmd, args)
     
     def disable_steamworks(self):
-        try:
-            os.rename(os.path.join(self.game_folder, "steam_api64.dll"), os.path.join(self.game_folder, "steam_api64_disabled.dll"))
-            os.rename(os.path.join(self.game_folder, "Steamworks_x64.dll"), os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"))
-        except FileNotFoundError:
-            if os.path.exists(os.path.join(self.game_folder, "steam_api64_disabled.dll")):
-                print(logger.info("Steamworks .dll files have already been disabled."))
+        if os.access(os.path.join(self.game_folder, "steam_api64.dll"), os.W_OK):
+            try:
+                os.rename(os.path.join(self.game_folder, "steam_api64.dll"), os.path.join(self.game_folder, "steam_api64_disabled.dll"))
+                os.rename(os.path.join(self.game_folder, "Steamworks_x64.dll"), os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"))
+            except FileNotFoundError:
+                if os.path.exists(os.path.join(self.game_folder, "steam_api64_disabled.dll")):
+                    print(logger.info("Steamworks .dll files have already been disabled."))
+                else:
+                    print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+            except Exception as e:
+                print(logger.error(f"Was unable to disable steamworks .dll files due to exception {e}"))
             else:
-                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
-        except Exception as e:
-            print(logger.error(f"Was unable to disable steamworks .dll files due to exception {e}"))
+                print(logger.info("Succesfully disabled Steam .dll files!"))
+        else:
+            print(logger.info("Unable to disable Steam .dll files due to write restrictions."))
 
     def enable_steamworks(self):
-        try:
-            os.rename(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.path.join(self.game_folder, "steam_api64.dll"))
-            os.rename(os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"), os.path.join(self.game_folder, "Steamworks_x64.dll"))
-        except FileNotFoundError:
-            if os.path.exists(os.path.join(self.game_folder, "steam_api64.dll")):
-                print(logger.info("Steamworks .dll files have already been enabled."))
+        if os.access(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.W_OK):
+            try:
+                os.rename(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.path.join(self.game_folder, "steam_api64.dll"))
+                os.rename(os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"), os.path.join(self.game_folder, "Steamworks_x64.dll"))
+            except FileNotFoundError:
+                if os.path.exists(os.path.join(self.game_folder, "steam_api64.dll")):
+                    print(logger.info("Steamworks .dll files have already been enabled."))
+                else:
+                    print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+            except Exception as e:
+                print(logger.error(f"Was unable to enable steamworks .dll files due to exception {e}"))
             else:
-                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
-        except Exception as e:
-            print(logger.error(f"Was unable to enable steamworks .dll files due to exception {e}"))
+                print(logger.info("Succesfully enabled Steam .dll files!"))
+        else:
+            print(logger.info("Unable to enable Steam .dll files due to write restrictions."))
 
 #update all other paths when save path gets changed
 def update_paths(ctx: SKPDContext):
