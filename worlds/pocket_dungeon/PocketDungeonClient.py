@@ -14,6 +14,7 @@ import pkgutil
 import shutil
 from kvui import GameManager
 from configparser import ConfigParser
+from .ClientData import knight_indexes, base_savedata
 tracker_loaded = False
 try:
     from worlds.tracker.TrackerClient import ClientCommandProcessor, TrackerGameContext as SuperContext, server_loop, gui_enabled, get_base_parser, logger
@@ -110,8 +111,8 @@ class SKPDContext(SuperContext):
         atexit.register(self.enable_steamworks)
 
         #load in default savedata
-        self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
-        self.char_id_map = json.loads(pkgutil.get_data(__name__, "data/knight_indexes.json").decode())
+        self.base_savedata = base_savedata
+        self.char_id_map = knight_indexes
     
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:
