@@ -10,7 +10,7 @@ import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
 import json
 import settings
-from Options import OptionError
+from logging import info
 from worlds.AutoWorld import LogicMixin
 
 def run_client(*args: str):
@@ -136,10 +136,13 @@ class SKPDWorld(World):
         #prune excluded and starting character from list
         self.characters = list(get_item_from_category(SKPDItemCategory.Character))
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
+        rerolled = False
+        while self.starting_character in self.options.excluded_characters:
+            self.starting_character = self.random.choice(self.options.starting_character.charlist)
+            rerolled = True
+        if rerolled:
+            info(f"{self.player_name}'s starting character was set to an excluded character, chose {self.starting_character} as starting character instead.")
         for char in self.options.excluded_characters:
-            if char == self.starting_character:
-                raise OptionError("Starting character cannot be set as excluded!")
-            else:
                 self.characters.remove(char)
         self.characters.remove(self.starting_character)
 
