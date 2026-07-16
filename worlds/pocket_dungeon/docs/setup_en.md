@@ -39,4 +39,4 @@ This needs to be set to the following directory, this can also be changed using 
 <img width="658" height="493" alt="image" src="https://github.com/user-attachments/assets/3ddb12df-db76-4928-9f1e-631c385c8ef7" />
 
 ### Where do I get a YAML file?
-When you have the Shovel Knight Pocket Dungeon APWorld installed you can generate one by clicking "Generate Template Options" inside of the Archipelago Launcher, they are also provided with the latest release.
+When you have the Shovel Knight Pocket Dungeon APWorld installed you can generate one by clicking "Generate Template Options" or using the "Options Creator" inside of the Archipelago Launcher.
