@@ -225,7 +225,7 @@ class CampShopPriceModifier(Range):
     How much the price for items in Chester's Camp Shop increases with each new stock.
     """
     display_name = "Chester Camp Shop Price Modifier"
-    default = 2500
+    default = 2000
     range_start = 0
     range_end = 5000
 
