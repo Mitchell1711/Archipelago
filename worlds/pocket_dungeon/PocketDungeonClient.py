@@ -325,7 +325,7 @@ def handle_savedata(ctx: SKPDContext):
     except:
         print(logger.info("No existing savefile found! Creating new file..."))
     
-    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"]:
+    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"] and savedata["__mod:Archipelago__"]["ap_session"] != 0:
         save_apsession = str(savedata["__mod:Archipelago__"]["ap_session"])
         #if apsession changed copy specific bits of data over to seperate file
         if save_apsession != ctx.apsession:
@@ -345,7 +345,7 @@ def handle_savedata(ctx: SKPDContext):
                 backup_savedata["__mod:Archipelago__"][key] = savedata["__mod:Archipelago__"][key]
             with open(ctx.save_file+save_apsession+".json", "w") as file:
                 json.dump(backup_savedata, file)
-        #dont need to do anything if savefile is alreadxy prepared
+        #dont need to do anything if savefile is already prepared
         else:
             return
     #in this case the savedata is either a vanilla file or there's no savefile
