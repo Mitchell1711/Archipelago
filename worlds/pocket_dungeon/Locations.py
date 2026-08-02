@@ -28,7 +28,7 @@ def create_location_categories():
         location_categories[category].append(loc)
 
 def get_location_from_category(category: SKPDLocationCategory) -> list[str]:
-    return location_categories[category]
+    return location_categories[category].copy()
 
 skpd_locations: dict[str, SKPDLocationData] = { }
 

@@ -120,7 +120,7 @@ class SKPDWorld(World):
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
-        self.characters = list(get_item_from_category(SKPDItemCategory.Character))
+        self.characters = get_item_from_category(SKPDItemCategory.Character)
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
         rerolled = False
         while self.starting_character in self.options.excluded_characters:
@@ -131,6 +131,7 @@ class SKPDWorld(World):
         for char in self.options.excluded_characters:
             self.characters.remove(char)
         self.characters.remove(self.starting_character)
+        self.base_starting_character = self.starting_character
 
         #remove random characters from the character list
         char_amount = math.floor(len(self.characters) * (self.options.total_characters / 100))
@@ -176,8 +177,8 @@ class SKPDWorld(World):
 
         if self.solo_run:
             for table in self.boss_table:
-                if f"{self.options.starting_character.charlist[self.options.starting_character.value]} Defeated" in table:
-                    table.remove(f"{self.options.starting_character.charlist[self.options.starting_character.value]} Defeated")
+                if f"{self.base_starting_character} Defeated" in table:
+                    table.remove(f"{self.base_starting_character} Defeated")
 
     def generate_early(self) -> None:
         #self.generate_mod_mappings()
@@ -195,7 +196,7 @@ class SKPDWorld(World):
             "black knight boss": "Black Knight Defeated",
             "shovel knight boss": "Shovel Knight Defeated"
         }
-
+        self.base_starting_character: str = ""
         self.solo_run = False
 
         self.handle_playable_characters()

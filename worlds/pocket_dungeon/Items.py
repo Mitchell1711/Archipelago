@@ -32,7 +32,7 @@ def create_item_categories():
         item_categories[category].append(item)
 
 def get_item_from_category(category: SKPDItemCategory) -> list[str]:
-    return item_categories[category]
+    return item_categories[category].copy()
 
 skpd_items: dict[str, SKPDItemData] = {
     "Shop Restock":             SKPDItemData(101, SKPDItemCategory.Progression, ItemClassification.progression),
