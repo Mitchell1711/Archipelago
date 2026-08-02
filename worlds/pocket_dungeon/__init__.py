@@ -80,20 +80,6 @@ class SKPDWorld(World):
 
     item_name_groups = {category.name: set(item_categories[category]) for category in item_categories}
     location_name_groups = {category.name: set(location_categories[category]) for category in location_categories}
-
-    bosses = {"king boss": "King Knight Defeated",
-                "specter boss": "Specter Knight Defeated",
-                "plague boss": "Plague Knight Defeated",
-                "treasure boss": "Treasure Knight Defeated",
-                "tinker boss": "Tinker Knight Defeated",
-                "mole boss": "Mole Knight Defeated",
-                "scrap boss": "Scrap Knight Defeated",
-                "propeller boss": "Propeller Knight Defeated",
-                "polar boss": "Polar Knight Defeated",
-                "prism boss": "Prism Knight Defeated",
-                "black knight boss": "Black Knight Defeated",
-                "shovel knight boss": "Shovel Knight Defeated"
-    }
     
     #Tell universal tracker we don't need a YAML    
     ut_can_gen_without_yaml = True
@@ -143,11 +129,13 @@ class SKPDWorld(World):
         if rerolled:
             info(f"{self.player_name}'s starting character was set to an excluded character, chose {self.starting_character} as starting character instead.")
         for char in self.options.excluded_characters:
-                self.characters.remove(char)
+            self.characters.remove(char)
         self.characters.remove(self.starting_character)
 
         #remove random characters from the character list
         char_amount = math.floor(len(self.characters) * (self.options.total_characters / 100))
+        if char_amount == 0:
+            self.solo_run = True
         to_remove = len(self.characters) - char_amount
         for i in range(to_remove):
             index = self.random.randint(0, len(self.characters) - 1)
@@ -186,8 +174,29 @@ class SKPDWorld(World):
             ["Propeller Knight Defeated", "Polar Knight Defeated", "Prism Knight Defeated"]
         ]
 
+        if self.solo_run:
+            for table in self.boss_table:
+                if f"{self.options.starting_character.charlist[self.options.starting_character.value]} Defeated" in table:
+                    table.remove(f"{self.options.starting_character.charlist[self.options.starting_character.value]} Defeated")
+
     def generate_early(self) -> None:
         #self.generate_mod_mappings()
+        self.bosses = {
+            "king boss": "King Knight Defeated",
+            "specter boss": "Specter Knight Defeated",
+            "plague boss": "Plague Knight Defeated",
+            "treasure boss": "Treasure Knight Defeated",
+            "tinker boss": "Tinker Knight Defeated",
+            "mole boss": "Mole Knight Defeated",
+            "scrap boss": "Scrap Knight Defeated",
+            "propeller boss": "Propeller Knight Defeated",
+            "polar boss": "Polar Knight Defeated",
+            "prism boss": "Prism Knight Defeated",
+            "black knight boss": "Black Knight Defeated",
+            "shovel knight boss": "Shovel Knight Defeated"
+        }
+
+        self.solo_run = False
 
         self.handle_playable_characters()
         self.randomize_bosses()
