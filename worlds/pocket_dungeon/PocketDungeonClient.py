@@ -218,9 +218,8 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             ctx.server_data = {}
             slot_info = {0: {"name": "Archipelago", "game": "Archipelago"}}
             for slot in args["slot_info"]:
-                curr_slot = args["slot_info"][slot]
-                slot_info.update({slot: {"name": curr_slot["name"], "game": curr_slot["game"]}})
-                
+                slot_info.update({slot: {"name": args["slot_info"][slot].name, "game": args["slot_info"][slot].game}})
+
             ctx.server_data["ConnectionInfo"] = {
                 "slot_data": args["slot_data"], 
                 "slot_info": slot_info

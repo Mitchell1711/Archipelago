@@ -257,7 +257,7 @@ class SKPDWorld(World):
         
         for filler in self.options.filler_weights:
             filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
-            if filler is not "Hats":
+            if filler != "Hats":
                 for i in range(filler_to_place):
                     skpd_itempool.append(self.create_item(filler))
             else:
