@@ -216,9 +216,14 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             #reset communication files
             reset_packets(ctx)
             ctx.server_data = {}
+            slot_info = {0: {"name": "Archipelago", "game": "Archipelago"}}
+            for slot in args["slot_info"]:
+                curr_slot = args["slot_info"][slot]
+                slot_info.update({slot: {"name": curr_slot["name"], "game": curr_slot["game"]}})
+                
             ctx.server_data["ConnectionInfo"] = {
                 "slot_data": args["slot_data"], 
-                "player_names": ctx.player_names
+                "slot_info": slot_info
                 }
             handle_savedata(ctx)
             create_stage_order(ctx, args["slot_data"]["StageOrder"], args["slot_data"]["BossOrder"])
