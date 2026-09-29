@@ -91,7 +91,8 @@ class SKPDContext(SuperContext):
         self.game_folder = self.game_options.game_directory
         self.workshop_folder = self.game_options.workshop_directory
         #variables for relative paths
-        self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
+        self.mod_name = "Archipelago"
+        self.mod_folder = os.path.join(self.save_folder, f"mods/{self.mod_name}")
         self.save_file = os.path.join(self.save_folder, "save")
         self.data_folder = os.path.join(self.mod_folder, "data")
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
@@ -329,8 +330,8 @@ def handle_savedata(ctx: SKPDContext):
     except:
         print(logger.info("No existing savefile found! Creating new file..."))
     
-    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"] and savedata["__mod:Archipelago__"]["ap_session"] != 0:
-        save_apsession = str(savedata["__mod:Archipelago__"]["ap_session"])
+    if f"__mod:{ctx.mod_name}__" in savedata and "ap_session" in savedata[f"__mod:{ctx.mod_name}__"] and savedata[f"__mod:{ctx.mod_name}__"]["ap_session"] != 0:
+        save_apsession = str(savedata[f"__mod:{ctx.mod_name}__"]["ap_session"])
         #if apsession changed copy specific bits of data over to seperate file
         if save_apsession != ctx.apsession:
             main_sdata: dict = savedata["0"]
@@ -341,12 +342,12 @@ def handle_savedata(ctx: SKPDContext):
                     "last_pindex3": main_sdata.get("last_pindex3"),
                     "percy_room": main_sdata.get("percy_room")
                 },
-                "__mod:Archipelago__": {}
+                f"__mod:{ctx.mod_name}__": {}
             }
             for i in range(13):
                 backup_savedata["0"][f"shortcut{i} unlock"] = main_sdata.get(f"shortcut{i} unlock")
-            for key in savedata["__mod:Archipelago__"].keys():
-                backup_savedata["__mod:Archipelago__"][key] = savedata["__mod:Archipelago__"][key]
+            for key in savedata[f"__mod:{ctx.mod_name}__"].keys():
+                backup_savedata[f"__mod:{ctx.mod_name}__"][key] = savedata[f"__mod:{ctx.mod_name}__"][key]
             with open(ctx.save_file+save_apsession+".json", "w") as file:
                 json.dump(backup_savedata, file)
         #dont need to do anything if savefile is already prepared
@@ -372,13 +373,13 @@ def handle_savedata(ctx: SKPDContext):
         with open(ctx.save_file+ctx.apsession+".json", "r") as file:
             filestr = file.read()
         new_savedata: dict = json.loads(filestr)
-        for key in new_savedata["__mod:Archipelago__"].keys():
-            savedata["__mod:Archipelago__"][key] = new_savedata["__mod:Archipelago__"][key]
+        for key in new_savedata[f"__mod:{ctx.mod_name}__"].keys():
+            savedata[f"__mod:{ctx.mod_name}__"][key] = new_savedata[f"__mod:{ctx.mod_name}__"][key]
         for key in new_savedata["0"].keys():
             savedata["0"][key] = new_savedata["0"][key]
     #prepare empty savefile if current session doesn't have one yet
     else:
-        savedata["__mod:Archipelago__"] = {
+        savedata[f"__mod:{ctx.mod_name}__"] = {
             "ap_session": ctx.apsession
         }
         savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
