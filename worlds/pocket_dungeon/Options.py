@@ -108,22 +108,18 @@ class ShuffleRelics(DefaultOnToggle):
     """
     display_name = "Shuffle Relics"
 
-class ShuffleHats(Toggle):
-    """
-    Shuffles all hats into the itempool.
-    """
-    display_name = "Shuffle Hats"
-
 class HatExpirationAction(Choice):
     """
     When any recieved hat effects wear off.
     New hat: Current hat gets removed when a new hat is sent
     End run: Current hat gets removed when dying or beating the next adventure run.
+    End level: Current hat gets removed when beating a level in an adventure run.
     """
     display_name = "Hat Expiration Action"
     option_new_hat = 0
     option_end_run = 1
-    default = 1
+    option_end_level = 2
+    default = 2
 
 class HatStackAmount(Range):
     """
@@ -139,7 +135,7 @@ class ExcludedHats(ItemSet):
     Prevent these hats from being shuffled into the multiworld.
     """
     display_name = "Excluded Hats"
-    default = {"Shop Lock Shako", "Legendary Gold Helm", "Protracted Beeto Beret"}
+    default = {"Shop Lock Shako"}
 
 class RandomizeLevelOrder(Toggle):
     """
@@ -159,14 +155,16 @@ class ModdedLevels(OptionSet):
 class FillerWeights(OptionCounter):
     """
     Determines how often each filler item appears in the itempool.
-    Items like hats can be added to this list if you want them to act like a standard filler item.
+    "Hats" is used as a keyword to add a randomized selection of hats into the itempool.
+    Individual hats can be added to this list as well.
     """
     display_name = "Filler Weights"
     default = {
         "1000 Gems": 45,
         "2500 Gems": 35,
         "5000 Gems": 20,
-        "Garbage": 50
+        "Garbage": 15,
+        "Hats": 35
     }
 
 class DungeonShopHints(Toggle):
@@ -242,7 +240,6 @@ class SKPDOptions(PerGameCommonOptions):
     randomize_bosses: RandomizeBosses
     modded_levels: ModdedLevels
     shuffle_relics: ShuffleRelics
-    shuffle_hats: ShuffleHats
     hat_expiration_action: HatExpirationAction
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
@@ -272,7 +269,6 @@ SKPD_option_groups = [
         CampShopPriceModifier
     ]),
     OptionGroup("Filler Options", [
-        ShuffleHats,
         FillerWeights,
         HatExpirationAction,
         HatStackAmount,

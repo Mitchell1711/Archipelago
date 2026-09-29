@@ -249,15 +249,6 @@ class SKPDWorld(World):
         for i in range(self.options.staring_relic_slot_amount.value):
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
-        if self.options.shuffle_hats:
-            shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
-            self.random.shuffle(shuffled_hats)
-            for hat in shuffled_hats:
-                if len(skpd_itempool) >= locations_to_fill:
-                    break
-                if hat not in self.options.excluded_hats.value:
-                    skpd_itempool.append(self.create_item(hat))
-        
         #add filler to itempool
         total_filler = locations_to_fill - len(skpd_itempool)
         total_filler_weights = 0
@@ -266,8 +257,22 @@ class SKPDWorld(World):
         
         for filler in self.options.filler_weights:
             filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
-            for i in range(filler_to_place):
-                skpd_itempool.append(self.create_item(filler))
+            if filler is not "Hats":
+                for i in range(filler_to_place):
+                    skpd_itempool.append(self.create_item(filler))
+            else:
+                shuffled_hats = []
+                for i in range(filler_to_place):
+                    #get a list of all hats and shuffle it
+                    #we do this here in case the list goes empty and we need to refill it again
+                    if not shuffled_hats:
+                        shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
+                        self.random.shuffle(shuffled_hats)
+
+                    hat_to_add = shuffled_hats.pop()
+                    while(hat_to_add in self.options.excluded_hats):
+                        hat_to_add = shuffled_hats.pop()
+                    skpd_itempool.append(self.create_item(hat_to_add))
         
         #fill last open slots due to rounding with 1000 gems
         for i in range(locations_to_fill - len(skpd_itempool)):
