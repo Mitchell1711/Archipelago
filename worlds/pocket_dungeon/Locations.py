@@ -6,7 +6,7 @@ from enum import Enum
 class SKPDLocationCategory(Enum):
     Boss_Defeated = 0
     Shrine = 1
-    Dungeon_Shop = 2
+    Dungeon_Item = 2
     Chester_Camp_Shop = 3
     Run_Complete = 4
 
@@ -60,12 +60,11 @@ def create_locations():
     
     location_index = 122
 
-    def add_dungeon_shop_locations(location: str, characters: list):
+    def add_dungeon_item_locations(location: str, characters: list):
         nonlocal location_index
         for character in characters:
-            if(character != "Quandary Sage"):
-                skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, SKPDLocationCategory.Dungeon_Shop, character)})
-                location_index += 1
+            skpd_locations.update({f"{location} - {character}": SKPDLocationData(location_index, SKPDLocationCategory.Dungeon_Item, character)})
+            location_index += 1
 
     #add chester camp upgrade locations
     stock_size = 5
@@ -78,15 +77,14 @@ def create_locations():
                                 SKPDLocationData(location_index, SKPDLocationCategory.Chester_Camp_Shop, stock)})
             location_index += 1
     
-    #add dungeon shop locations, each character has an unique location
+    #add dungeon item locations, each character has an unique location
     characters = get_item_from_category(SKPDItemCategory.Character)
 
-    for i in range(8):
-        add_dungeon_shop_locations(f"Dungeon {i+2} Shop", characters)
-    add_dungeon_shop_locations("Scholar Sanctum Shop", characters)
+    for item in range(2):
+        for dungeon in range(9):
+            add_dungeon_item_locations(f"Dungeon {dungeon+1} Item {item+1}", characters)
+        add_dungeon_item_locations(f"Scholar Sanctum Item {item+1}", characters)
+        
     for character in characters:
         skpd_locations.update({f"Run Complete - {character}": SKPDLocationData(location_index, SKPDLocationCategory.Run_Complete, character)})
         location_index += 1
-    #special chester dungeon shop location since only he can enter a shop on the first stage
-    skpd_locations.update({"Dungeon 1 Shop - Chester": SKPDLocationData(location_index, SKPDLocationCategory.Dungeon_Shop, "Chester")})
-    location_index += 1

@@ -37,11 +37,11 @@ def set_rules(world: MultiWorld, player: int, options: SKPDOptions):
                 add_rule(location, lambda state, dungeon=min(needed_restock + 1, 9): 
                          state.has("Glitched Logic", player) or state.can_reach_region(f"Dungeon {dungeon}", player))
 
-        elif skpd_locations[location.name].category == SKPDLocationCategory.Dungeon_Shop or skpd_locations[location.name].category == SKPDLocationCategory.Run_Complete:
+        elif skpd_locations[location.name].category == SKPDLocationCategory.Dungeon_Item or skpd_locations[location.name].category == SKPDLocationCategory.Run_Complete:
             character = skpd_locations[location.name].data
             add_rule(location, lambda state, char=character: state.has(char, player))
             #add refract characters if enabled
-            if options.shuffle_refract_characters and location.name != "Dungeon 1 Shop - Chester":
+            if options.shuffle_refract_characters:
                 refract_char = f"{character} B"
                 if refract_char in skpd_items:
                     add_rule(location, lambda state, char=refract_char: state.has(char, player), "or")

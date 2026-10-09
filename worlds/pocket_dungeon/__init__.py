@@ -4,7 +4,7 @@ from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories, SKPDItemCategory
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions
-from .Options import SKPDOptions, SKPD_option_groups
+from .Options import SKPDOptions, SKPD_option_groups, SKPD_option_presets
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
@@ -49,6 +49,7 @@ class SKPDSettings(settings.Group):
 class SKPDWeb(WebWorld):
     theme = "grass"
     option_groups = SKPD_option_groups
+    options_presets = SKPD_option_presets
     setup_en = Tutorial(
         "Multiworld Setup Guide",
         "A guide to setting up the Shovel Knight Pocket Dungeon randomizer connected to an Archipelago Multiworld.",
@@ -94,7 +95,7 @@ class SKPDWorld(World):
             mappings["item_id_to_name"].update({code: {"name": key}})
             if skpd_items[key].internal_name != None:
                 mappings["item_id_to_name"][code]["internal_name"] = skpd_items[key].internal_name
-            if skpd_items[key].category == "Character":
+            if skpd_items[key].category == SKPDItemCategory.Character:
                 mappings["characters"].update({skpd_items[key].internal_name: key})
         mappings["location_name_to_id"] = self.location_name_to_id
         with open("skpd_mappings.json", "w") as file:
@@ -256,7 +257,7 @@ class SKPDWorld(World):
             total_filler_weights += self.options.filler_weights[filler]
         
         for filler in self.options.filler_weights:
-            filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
+            filler_to_place = max(math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights)), 1)
             if filler != "Hats":
                 for i in range(filler_to_place):
                     skpd_itempool.append(self.create_item(filler))
@@ -274,7 +275,7 @@ class SKPDWorld(World):
                         hat_to_add = shuffled_hats.pop()
                     skpd_itempool.append(self.create_item(hat_to_add))
         
-        #fill last open slots due to rounding with 1000 gems
+        #fill any possible open slots with 1000 gems
         for i in range(locations_to_fill - len(skpd_itempool)):
             skpd_itempool.append(self.create_item("1000 Gems"))
 
@@ -329,7 +330,6 @@ class SKPDWorld(World):
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
             "ProgressionType": self.options.progression_type.value,
-            "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
             "RelicLeniency": self.options.relic_leniency.value,
             "CampShopPriceModifier": self.options.camp_shop_price_modifier.value,

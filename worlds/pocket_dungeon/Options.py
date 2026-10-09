@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup
+from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup, StartInventoryPool
+from typing import Any, Dict
 
 class StartingCharacter(Choice):
     """
@@ -27,7 +28,7 @@ class StartingCharacter(Choice):
     option_spinwulf = 18
     option_schmutz = 19
     option_beefto = 20
-    default = option_shovel_knight
+    default = 'random'
 
     charlist = ["Shovel Knight", 
                 "Black Knight", 
@@ -73,7 +74,7 @@ class TotalCharacters(Range):
     display_name = "Total Characters"
     range_start = 0
     range_end = 100
-    default = 100
+    default = 50
 
 class ShuffleRefractCharacters(DefaultOnToggle):
     """
@@ -160,20 +161,12 @@ class FillerWeights(OptionCounter):
     """
     display_name = "Filler Weights"
     default = {
-        "1000 Gems": 45,
+        "1000 Gems": 40,
         "2500 Gems": 35,
         "5000 Gems": 20,
-        "Garbage": 15,
-        "Hats": 35
+        "Garbage": 25,
+        "Hats": 40
     }
-
-class DungeonShopHints(Toggle):
-    """
-    Toggles behavior of dungeon shops when selling archipelago items.
-    On: Dungeon shops will show which item they're selling before purchase but will cost a variable amount of gems.
-    Off: Dungeon shops won't show which item they're selling but the item can be picked up for free.
-    """
-    display_name = "Item Shop Hints"
 
 class RelicLeniency(Range):
     """
@@ -244,12 +237,13 @@ class SKPDOptions(PerGameCommonOptions):
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
     filler_weights: FillerWeights
-    dungeon_shop_hints: DungeonShopHints
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
     staring_relic_slot_amount: StartingRelicSlotAmount
     camp_shop_price_modifier: CampShopPriceModifier
     camp_shop_starting_price: CampShopStartingPrice
+    
+    start_inventory_from_pool: StartInventoryPool
 
 SKPD_option_groups = [
     OptionGroup("Character Options", [
@@ -278,7 +272,44 @@ SKPD_option_groups = [
         RandomizeLevelOrder,
         ModdedLevels,
         RandomizeBosses,
-        StartingRelicSlotAmount,
-        DungeonShopHints
+        StartingRelicSlotAmount
     ])
 ]
+
+SKPD_option_presets: Dict[str, Dict[str, Any]] = {
+    "Vanilla Flavor": {
+        "total_characters": 100,
+        "progression_type": 1,
+        "shuffle_relics": True,
+        "early_meal_ticket": False,
+        "start_inventory_from_pool": {
+            "Meal Ticket": 1, 
+            "Premium Meal Ticket": 1, 
+            "Diamond Dust": 1, 
+            "Obsidian Drill": 1, 
+            "Snoutin' Charm": 1,
+            "Shockproof Socks": 1,
+            "Fizzle Wand": 1,
+            "Bomb Seed Bag": 1,
+            "Nimbus Balloon": 1,
+            "Potion Napkin": 1,
+            "Dynamallet": 1,
+            "Power Pail": 1,
+            "Desperation Talon": 1,
+            "Gem Chain": 1,
+            "Gem Beet": 1
+        },
+        "staring_relic_slot_amount": 0
+    },
+    "Surprise Legendary Quest": {
+        "filler_weights": {
+            "1000 Gems": 40,
+            "2500 Gems": 35,
+            "5000 Gems": 20,
+            "Garbage": 25,
+            "Legendary Gold Helm": 1
+        },
+        "hat_expiration_action": 0,
+        "hat_stack_amount": 1
+    },
+}
