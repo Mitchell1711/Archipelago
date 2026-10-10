@@ -2,6 +2,7 @@ from typing import NamedTuple, Any
 from BaseClasses import Location
 from .Items import get_item_from_category, SKPDItemCategory
 from enum import Enum
+from .Options import DungeonItemAmount, HubShopRestockCount
 
 class SKPDLocationCategory(Enum):
     Boss_Defeated = 0
@@ -68,7 +69,7 @@ def create_locations():
 
     #add chester camp upgrade locations
     stock_size = 5
-    max_restocks = 20
+    max_restocks = HubShopRestockCount.range_end
     for i in range(max_restocks):
         stock = i+1
         for j in range(stock_size):
@@ -80,7 +81,7 @@ def create_locations():
     #add dungeon item locations, each character has an unique location
     characters = get_item_from_category(SKPDItemCategory.Character)
 
-    for item in range(2):
+    for item in range(DungeonItemAmount.range_end):
         for dungeon in range(9):
             add_dungeon_item_locations(f"Dungeon {dungeon+1} Item {item+1}", characters)
         add_dungeon_item_locations(f"Scholar Sanctum Item {item+1}", characters)

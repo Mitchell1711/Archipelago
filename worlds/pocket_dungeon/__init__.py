@@ -108,6 +108,7 @@ class SKPDWorld(World):
             #give ut access to all character and shop locations
             self.characters = get_item_from_category(SKPDItemCategory.Character)
             self.options.hub_shop_restock_count.value = self.options.hub_shop_restock_count.range_end
+            self.options.dungeon_item_amount.value = self.options.dungeon_item_amount.range_end
             #get slot data
             slot_data = re_gen_passthrough[self.game]
             self.options.progression_type.value = slot_data.get("ProgressionType", self.options.progression_type.value)
@@ -333,7 +334,8 @@ class SKPDWorld(World):
             "BossOrder": self.boss_order,
             "RelicLeniency": self.options.relic_leniency.value,
             "CampShopPriceModifier": self.options.camp_shop_price_modifier.value,
-            "CampShopStartingPrice": self.options.camp_shop_starting_price.value
+            "CampShopStartingPrice": self.options.camp_shop_starting_price.value,
+            "DungeonItemAmount": self.options.dungeon_item_amount.value
         }
     
     def collect(self, state: CollectionState, item: Item) -> bool:

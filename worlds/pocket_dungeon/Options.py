@@ -220,6 +220,15 @@ class CampShopPriceModifier(Range):
     range_start = 0
     range_end = 5000
 
+class DungeonItemAmount(Range):
+    """
+    How many Archipelago items will spawn inside of a dungeon.
+    """
+    display_name = "Dungeon Item Amount"
+    default = 2
+    range_start = 1
+    range_end = 4
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -242,6 +251,7 @@ class SKPDOptions(PerGameCommonOptions):
     staring_relic_slot_amount: StartingRelicSlotAmount
     camp_shop_price_modifier: CampShopPriceModifier
     camp_shop_starting_price: CampShopStartingPrice
+    dungeon_item_amount: DungeonItemAmount
     
     start_inventory_from_pool: StartInventoryPool
 
@@ -256,6 +266,7 @@ SKPD_option_groups = [
     OptionGroup("Progression Options", [
         ProgressionType,
         HubShopRestockCount,
+        DungeonItemAmount,
         ShuffleRelics,
         EarlyMealTicket,
         RelicLeniency,
