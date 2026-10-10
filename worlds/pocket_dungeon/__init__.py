@@ -1,16 +1,17 @@
 from typing import Any, Mapping
-from BaseClasses import Item, Tutorial, ItemClassification
+from BaseClasses import Item, Tutorial, ItemClassification, CollectionState, MultiWorld
 from ..AutoWorld import World, WebWorld
-from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories
+from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories, SKPDItemCategory
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions
-from .Options import SKPDOptions, SKPD_option_groups
+from .Options import SKPDOptions, SKPD_option_groups, SKPD_option_presets
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
 import json
 import settings
-from Options import OptionError
+from logging import info
+from worlds.AutoWorld import LogicMixin
 
 def run_client(*args: str):
     print("Running Pocket Dungeon Client")
@@ -48,6 +49,7 @@ class SKPDSettings(settings.Group):
 class SKPDWeb(WebWorld):
     theme = "grass"
     option_groups = SKPD_option_groups
+    options_presets = SKPD_option_presets
     setup_en = Tutorial(
         "Multiworld Setup Guide",
         "A guide to setting up the Shovel Knight Pocket Dungeon randomizer connected to an Archipelago Multiworld.",
@@ -77,28 +79,10 @@ class SKPDWorld(World):
     item_name_to_id = item_dict
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
 
-    item_name_groups = {category: set(item_categories[category]) for category in item_categories}
-    location_name_groups = {category: set(location_categories[category]) for category in location_categories}
-
-    bosses = {"king boss": "King Knight Defeated",
-                "specter boss": "Specter Knight Defeated",
-                "plague boss": "Plague Knight Defeated",
-                "treasure boss": "Treasure Knight Defeated",
-                "tinker boss": "Tinker Knight Defeated",
-                "mole boss": "Mole Knight Defeated",
-                "scrap boss": "Scrap Knight Defeated",
-                "propeller boss": "Propeller Knight Defeated",
-                "polar boss": "Polar Knight Defeated",
-                "prism boss": "Prism Knight Defeated",
-                "black knight boss": "Black Knight Defeated",
-                "shovel knight boss": "Shovel Knight Defeated"
-    }
+    item_name_groups = {category.name: set(item_categories[category]) for category in item_categories}
+    location_name_groups = {category.name: set(location_categories[category]) for category in location_categories}
     
-    #Tell universal tracker we don't need a YAML
-    @staticmethod
-    def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]: #UT support function that causes a re-generation
-        return slot_data #we don't need to do any modification to the slot data, so just return it
-    
+    #Tell universal tracker we don't need a YAML    
     ut_can_gen_without_yaml = True
     glitches_item_name = "Glitched Logic"
 
@@ -111,7 +95,7 @@ class SKPDWorld(World):
             mappings["item_id_to_name"].update({code: {"name": key}})
             if skpd_items[key].internal_name != None:
                 mappings["item_id_to_name"][code]["internal_name"] = skpd_items[key].internal_name
-            if skpd_items[key].category == "Character":
+            if skpd_items[key].category == SKPDItemCategory.Character:
                 mappings["characters"].update({skpd_items[key].internal_name: key})
         mappings["location_name_to_id"] = self.location_name_to_id
         with open("skpd_mappings.json", "w") as file:
@@ -122,8 +106,9 @@ class SKPDWorld(World):
         re_gen_passthrough = getattr(self.multiworld,"re_gen_passthrough",{})
         if re_gen_passthrough and self.game in re_gen_passthrough:
             #give ut access to all character and shop locations
-            self.characters = get_item_from_category("Character")
+            self.characters = get_item_from_category(SKPDItemCategory.Character)
             self.options.hub_shop_restock_count.value = self.options.hub_shop_restock_count.range_end
+            self.options.dungeon_item_amount.value = self.options.dungeon_item_amount.range_end
             #get slot data
             slot_data = re_gen_passthrough[self.game]
             self.options.progression_type.value = slot_data.get("ProgressionType", self.options.progression_type.value)
@@ -137,17 +122,23 @@ class SKPDWorld(World):
     
     def handle_playable_characters(self) -> None:
         #prune excluded and starting character from list
-        self.characters = list(get_item_from_category("Character"))
+        self.characters = get_item_from_category(SKPDItemCategory.Character)
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
+        rerolled = False
+        while self.starting_character in self.options.excluded_characters:
+            self.starting_character = self.random.choice(self.options.starting_character.charlist)
+            rerolled = True
+        if rerolled:
+            info(f"{self.player_name}'s starting character was set to an excluded character, chose {self.starting_character} as starting character instead.")
         for char in self.options.excluded_characters:
-            if char == self.starting_character:
-                raise OptionError("Starting character cannot be set as excluded!")
-            else:
-                self.characters.remove(char)
+            self.characters.remove(char)
         self.characters.remove(self.starting_character)
+        self.base_starting_character = self.starting_character
 
         #remove random characters from the character list
         char_amount = math.floor(len(self.characters) * (self.options.total_characters / 100))
+        if char_amount == 0:
+            self.solo_run = True
         to_remove = len(self.characters) - char_amount
         for i in range(to_remove):
             index = self.random.randint(0, len(self.characters) - 1)
@@ -186,8 +177,29 @@ class SKPDWorld(World):
             ["Propeller Knight Defeated", "Polar Knight Defeated", "Prism Knight Defeated"]
         ]
 
+        if self.solo_run:
+            for table in self.boss_table:
+                if f"{self.base_starting_character} Defeated" in table:
+                    table.remove(f"{self.base_starting_character} Defeated")
+
     def generate_early(self) -> None:
         #self.generate_mod_mappings()
+        self.bosses = {
+            "king boss": "King Knight Defeated",
+            "specter boss": "Specter Knight Defeated",
+            "plague boss": "Plague Knight Defeated",
+            "treasure boss": "Treasure Knight Defeated",
+            "tinker boss": "Tinker Knight Defeated",
+            "mole boss": "Mole Knight Defeated",
+            "scrap boss": "Scrap Knight Defeated",
+            "propeller boss": "Propeller Knight Defeated",
+            "polar boss": "Polar Knight Defeated",
+            "prism boss": "Prism Knight Defeated",
+            "black knight boss": "Black Knight Defeated",
+            "shovel knight boss": "Shovel Knight Defeated"
+        }
+        self.base_starting_character: str = ""
+        self.solo_run = False
 
         self.handle_playable_characters()
         self.randomize_bosses()
@@ -230,7 +242,7 @@ class SKPDWorld(World):
             else:
                 self.push_precollected(self.create_item(character))
         
-        for relic in get_item_from_category("Relic"):
+        for relic in get_item_from_category(SKPDItemCategory.Relic):
             if self.options.shuffle_relics:
                 skpd_itempool.append(self.create_item(relic))
             else:
@@ -239,15 +251,6 @@ class SKPDWorld(World):
         for i in range(self.options.staring_relic_slot_amount.value):
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
-        if self.options.shuffle_hats:
-            shuffled_hats = get_item_from_category("Hat")
-            self.random.shuffle(shuffled_hats)
-            for hat in shuffled_hats:
-                if len(skpd_itempool) >= locations_to_fill:
-                    break
-                if hat not in self.options.excluded_hats.value:
-                    skpd_itempool.append(self.create_item(hat))
-        
         #add filler to itempool
         total_filler = locations_to_fill - len(skpd_itempool)
         total_filler_weights = 0
@@ -255,11 +258,25 @@ class SKPDWorld(World):
             total_filler_weights += self.options.filler_weights[filler]
         
         for filler in self.options.filler_weights:
-            filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
-            for i in range(filler_to_place):
-                skpd_itempool.append(self.create_item(filler))
+            filler_to_place = max(math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights)), 1)
+            if filler != "Hats":
+                for i in range(filler_to_place):
+                    skpd_itempool.append(self.create_item(filler))
+            else:
+                shuffled_hats = []
+                for i in range(filler_to_place):
+                    #get a list of all hats and shuffle it
+                    #we do this here in case the list goes empty and we need to refill it again
+                    if not shuffled_hats:
+                        shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
+                        self.random.shuffle(shuffled_hats)
+
+                    hat_to_add = shuffled_hats.pop()
+                    while(hat_to_add in self.options.excluded_hats):
+                        hat_to_add = shuffled_hats.pop()
+                    skpd_itempool.append(self.create_item(hat_to_add))
         
-        #fill last open slots due to rounding with 1000 gems
+        #fill any possible open slots with 1000 gems
         for i in range(locations_to_fill - len(skpd_itempool)):
             skpd_itempool.append(self.create_item("1000 Gems"))
 
@@ -314,7 +331,41 @@ class SKPDWorld(World):
             "HatExpiration": self.options.hat_expiration_action.value,
             "MaxHats": self.options.hat_stack_amount.value,
             "ProgressionType": self.options.progression_type.value,
-            "DungeonShopHints": self.options.dungeon_shop_hints.value,
             "BossOrder": self.boss_order,
-            "RelicLeniency": self.options.relic_leniency.value
+            "RelicLeniency": self.options.relic_leniency.value,
+            "CampShopPriceModifier": self.options.camp_shop_price_modifier.value,
+            "CampShopStartingPrice": self.options.camp_shop_starting_price.value,
+            "DungeonItemAmount": self.options.dungeon_item_amount.value
         }
+    
+    def collect(self, state: CollectionState, item: Item) -> bool:
+        change = super().collect(state, item)
+        if change and item.name != "Glitched Logic":
+            itemdata = skpd_items[item.name]
+            #check if item is a relic
+            if itemdata.category == SKPDItemCategory.Relic:
+                state.skpd_relic_quality[self.player] += itemdata.data * (self.options.relic_leniency.value / 10)
+        return change
+    
+    def remove(self, state: CollectionState, item: Item) -> bool:
+        change = super().remove(state, item)
+        if change and item.name != "Glitched Logic":
+            itemdata = skpd_items[item.name]
+            #check if item is a relic
+            if itemdata.category == SKPDItemCategory.Relic:
+                state.skpd_relic_quality[self.player] -= itemdata.data * (self.options.relic_leniency.value / 10)
+        return change
+
+class SKPDState(LogicMixin):
+    skpd_relic_quality: dict[int, float]  # per player
+
+    def init_mixin(self, multiworld: MultiWorld) -> None:
+        self.skpd_relic_quality = {
+            player: 0 for player in multiworld.get_game_players("Shovel Knight Pocket Dungeon")
+        }
+
+    def copy_mixin(self, new_state: CollectionState) -> CollectionState:
+        new_state.skpd_relic_quality = {
+            player: relics for player, relics in self.skpd_relic_quality.items()
+        }
+        return new_state

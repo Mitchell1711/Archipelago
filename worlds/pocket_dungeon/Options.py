@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup
+from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup, StartInventoryPool
+from typing import Any, Dict
 
 class StartingCharacter(Choice):
     """
@@ -27,7 +28,7 @@ class StartingCharacter(Choice):
     option_spinwulf = 18
     option_schmutz = 19
     option_beefto = 20
-    default = option_shovel_knight
+    default = 'random'
 
     charlist = ["Shovel Knight", 
                 "Black Knight", 
@@ -73,7 +74,7 @@ class TotalCharacters(Range):
     display_name = "Total Characters"
     range_start = 0
     range_end = 100
-    default = 100
+    default = 50
 
 class ShuffleRefractCharacters(DefaultOnToggle):
     """
@@ -108,22 +109,18 @@ class ShuffleRelics(DefaultOnToggle):
     """
     display_name = "Shuffle Relics"
 
-class ShuffleHats(Toggle):
-    """
-    Shuffles all hats into the itempool.
-    """
-    display_name = "Shuffle Hats"
-
 class HatExpirationAction(Choice):
     """
     When any recieved hat effects wear off.
     New hat: Current hat gets removed when a new hat is sent
     End run: Current hat gets removed when dying or beating the next adventure run.
+    End level: Current hat gets removed when beating a level in an adventure run.
     """
     display_name = "Hat Expiration Action"
     option_new_hat = 0
     option_end_run = 1
-    default = 1
+    option_end_level = 2
+    default = 2
 
 class HatStackAmount(Range):
     """
@@ -139,7 +136,7 @@ class ExcludedHats(ItemSet):
     Prevent these hats from being shuffled into the multiworld.
     """
     display_name = "Excluded Hats"
-    default = {"Shop Lock Shako", "Legendary Gold Helm", "Protracted Beeto Beret"}
+    default = {"Shop Lock Shako"}
 
 class RandomizeLevelOrder(Toggle):
     """
@@ -159,23 +156,17 @@ class ModdedLevels(OptionSet):
 class FillerWeights(OptionCounter):
     """
     Determines how often each filler item appears in the itempool.
-    Items like hats can be added to this list if you want them to act like a standard filler item.
+    "Hats" is used as a keyword to add a randomized selection of hats into the itempool.
+    Individual hats can be added to this list as well.
     """
     display_name = "Filler Weights"
     default = {
-        "1000 Gems": 45,
+        "1000 Gems": 40,
         "2500 Gems": 35,
         "5000 Gems": 20,
-        "Garbage": 50
+        "Garbage": 25,
+        "Hats": 40
     }
-
-class DungeonShopHints(Toggle):
-    """
-    Toggles behavior of dungeon shops when selling archipelago items.
-    On: Dungeon shops will show which item they're selling before purchase but will cost a variable amount of gems.
-    Off: Dungeon shops won't show which item they're selling but the item can be picked up for free.
-    """
-    display_name = "Item Shop Hints"
 
 class RelicLeniency(Range):
     """
@@ -200,7 +191,7 @@ class StartingRelicSlotAmount(Range):
     Each slot adds a randomized relic at the start of an adventure run. Helps with speeding up the late game a bit.
     """
     display_name = "Starting Relic Slot Amount"
-    default = 0
+    default = 5
     range_start = 0
     range_end = 10
 
@@ -216,6 +207,34 @@ class SideroomChecks(Toggle):
     """
     display_name = "Sideroom Checks"
 
+class CampShopStartingPrice(Range):
+    """
+    How much the first stock of Chester's Camp Shop will cost.
+    Note: Shop item price is further adjusted based on the item classification.
+    """
+    display_name = "Chester Camp Shop Starting Price"
+    default = 10000
+    range_start = 0
+    range_end = 20000
+
+class CampShopPriceModifier(Range):
+    """
+    How much the price for items in Chester's Camp Shop increases with each new stock.
+    """
+    display_name = "Chester Camp Shop Price Modifier"
+    default = 2000
+    range_start = 0
+    range_end = 5000
+
+class DungeonItemAmount(Range):
+    """
+    How many Archipelago items will spawn inside of a dungeon.
+    """
+    display_name = "Dungeon Item Amount"
+    default = 2
+    range_start = 1
+    range_end = 4
+
 @dataclass
 class SKPDOptions(PerGameCommonOptions):
     starting_character: StartingCharacter
@@ -229,16 +248,19 @@ class SKPDOptions(PerGameCommonOptions):
     randomize_bosses: RandomizeBosses
     modded_levels: ModdedLevels
     shuffle_relics: ShuffleRelics
-    shuffle_hats: ShuffleHats
     hat_expiration_action: HatExpirationAction
     hat_stack_amount: HatStackAmount
     excluded_hats: ExcludedHats
     filler_weights: FillerWeights
-    dungeon_shop_hints: DungeonShopHints
     relic_leniency: RelicLeniency
     early_meal_ticket: EarlyMealTicket
     staring_relic_slot_amount: StartingRelicSlotAmount
     sideroom_checks: SideroomChecks
+    camp_shop_price_modifier: CampShopPriceModifier
+    camp_shop_starting_price: CampShopStartingPrice
+    dungeon_item_amount: DungeonItemAmount
+    
+    start_inventory_from_pool: StartInventoryPool
 
 SKPD_option_groups = [
     OptionGroup("Character Options", [
@@ -251,12 +273,14 @@ SKPD_option_groups = [
     OptionGroup("Progression Options", [
         ProgressionType,
         HubShopRestockCount,
+        DungeonItemAmount,
         ShuffleRelics,
         EarlyMealTicket,
-        RelicLeniency
+        RelicLeniency,
+        CampShopStartingPrice,
+        CampShopPriceModifier
     ]),
     OptionGroup("Filler Options", [
-        ShuffleHats,
         FillerWeights,
         HatExpirationAction,
         HatStackAmount,
@@ -267,7 +291,44 @@ SKPD_option_groups = [
         RandomizeLevelOrder,
         ModdedLevels,
         RandomizeBosses,
-        StartingRelicSlotAmount,
-        DungeonShopHints
+        StartingRelicSlotAmount
     ])
 ]
+
+SKPD_option_presets: Dict[str, Dict[str, Any]] = {
+    "Vanilla Flavor": {
+        "total_characters": 100,
+        "progression_type": 1,
+        "shuffle_relics": True,
+        "early_meal_ticket": False,
+        "start_inventory_from_pool": {
+            "Meal Ticket": 1, 
+            "Premium Meal Ticket": 1, 
+            "Diamond Dust": 1, 
+            "Obsidian Drill": 1, 
+            "Snoutin' Charm": 1,
+            "Shockproof Socks": 1,
+            "Fizzle Wand": 1,
+            "Bomb Seed Bag": 1,
+            "Nimbus Balloon": 1,
+            "Potion Napkin": 1,
+            "Dynamallet": 1,
+            "Power Pail": 1,
+            "Desperation Talon": 1,
+            "Gem Chain": 1,
+            "Gem Beet": 1
+        },
+        "staring_relic_slot_amount": 0
+    },
+    "Surprise Legendary Quest": {
+        "filler_weights": {
+            "1000 Gems": 40,
+            "2500 Gems": 35,
+            "5000 Gems": 20,
+            "Garbage": 25,
+            "Legendary Gold Helm": 1
+        },
+        "hat_expiration_action": 0,
+        "hat_stack_amount": 1
+    },
+}

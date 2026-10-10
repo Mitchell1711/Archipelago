@@ -14,6 +14,7 @@ import pkgutil
 import shutil
 from kvui import GameManager
 from configparser import ConfigParser
+from .ClientData import knight_indexes, base_savedata
 tracker_loaded = False
 try:
     from worlds.tracker.TrackerClient import ClientCommandProcessor, TrackerGameContext as SuperContext, server_loop, gui_enabled, get_base_parser, logger
@@ -66,7 +67,7 @@ class SKPDCommandProcessor(ClientCommandProcessor):
                 self.output("Didn't change directory.")
     
     def _cmd_launch_game(self):
-        """Launch Shovel Knight Pocket Dungeon manually"""
+        """Launch Shovel Knight Pocket Dungeon"""
         if isinstance(self.ctx, SKPDContext):
             run_game(self.ctx)
     
@@ -90,7 +91,8 @@ class SKPDContext(SuperContext):
         self.game_folder = self.game_options.game_directory
         self.workshop_folder = self.game_options.workshop_directory
         #variables for relative paths
-        self.mod_folder = os.path.join(self.save_folder, "mods/Archipelago")
+        self.mod_name = "Archipelago"
+        self.mod_folder = os.path.join(self.save_folder, f"mods/{self.mod_name}")
         self.save_file = os.path.join(self.save_folder, "save")
         self.data_folder = os.path.join(self.mod_folder, "data")
         self.client_file = os.path.join(self.mod_folder, "data/client_data.json")
@@ -110,8 +112,8 @@ class SKPDContext(SuperContext):
         atexit.register(self.enable_steamworks)
 
         #load in default savedata
-        self.base_savedata = json.loads(pkgutil.get_data(__name__, "data/base_savedata.json").decode())
-        self.char_id_map = json.loads(pkgutil.get_data(__name__, "data/knight_indexes.json").decode())
+        self.base_savedata = base_savedata
+        self.char_id_map = knight_indexes
     
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:
@@ -135,28 +137,38 @@ class SKPDContext(SuperContext):
         process_package(self, cmd, args)
     
     def disable_steamworks(self):
-        try:
-            os.rename(os.path.join(self.game_folder, "steam_api64.dll"), os.path.join(self.game_folder, "steam_api64_disabled.dll"))
-            os.rename(os.path.join(self.game_folder, "Steamworks_x64.dll"), os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"))
-        except FileNotFoundError:
-            if os.path.exists(os.path.join(self.game_folder, "steam_api64_disabled.dll")):
-                print(logger.info("Steamworks .dll files have already been disabled."))
+        if os.access(os.path.join(self.game_folder, "steam_api64.dll"), os.W_OK):
+            try:
+                os.rename(os.path.join(self.game_folder, "steam_api64.dll"), os.path.join(self.game_folder, "steam_api64_disabled.dll"))
+                os.rename(os.path.join(self.game_folder, "Steamworks_x64.dll"), os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"))
+            except FileNotFoundError:
+                if os.path.exists(os.path.join(self.game_folder, "steam_api64_disabled.dll")):
+                    print(logger.info("Steamworks .dll files have already been disabled."))
+                else:
+                    print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+            except Exception as e:
+                print(logger.error(f"Was unable to disable steamworks .dll files due to exception {e}"))
             else:
-                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
-        except Exception as e:
-            print(logger.error(f"Was unable to disable steamworks .dll files due to exception {e}"))
+                print(logger.info("Succesfully disabled Steam .dll files!"))
+        else:
+            print(logger.info("Unable to disable Steam .dll files due to write restrictions."))
 
     def enable_steamworks(self):
-        try:
-            os.rename(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.path.join(self.game_folder, "steam_api64.dll"))
-            os.rename(os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"), os.path.join(self.game_folder, "Steamworks_x64.dll"))
-        except FileNotFoundError:
-            if os.path.exists(os.path.join(self.game_folder, "steam_api64.dll")):
-                print(logger.info("Steamworks .dll files have already been enabled."))
+        if os.access(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.W_OK):
+            try:
+                os.rename(os.path.join(self.game_folder, "steam_api64_disabled.dll"), os.path.join(self.game_folder, "steam_api64.dll"))
+                os.rename(os.path.join(self.game_folder, "Steamworks_x64_disabled.dll"), os.path.join(self.game_folder, "Steamworks_x64.dll"))
+            except FileNotFoundError:
+                if os.path.exists(os.path.join(self.game_folder, "steam_api64.dll")):
+                    print(logger.info("Steamworks .dll files have already been enabled."))
+                else:
+                    print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
+            except Exception as e:
+                print(logger.error(f"Was unable to enable steamworks .dll files due to exception {e}"))
             else:
-                print(logger.error("Couldn't find Steamworks .dll files, please check if the gamepath is correct."))
-        except Exception as e:
-            print(logger.error(f"Was unable to enable steamworks .dll files due to exception {e}"))
+                print(logger.info("Succesfully enabled Steam .dll files!"))
+        else:
+            print(logger.info("Unable to enable Steam .dll files due to write restrictions."))
 
 #update all other paths when save path gets changed
 def update_paths(ctx: SKPDContext):
@@ -205,16 +217,20 @@ def process_package(ctx: SKPDContext, cmd: str, args: dict):
             #reset communication files
             reset_packets(ctx)
             ctx.server_data = {}
+            slot_info = {0: {"name": "Archipelago", "game": "Archipelago"}}
+            for slot in args["slot_info"]:
+                slot_info.update({slot: {"name": args["slot_info"][slot].name, "game": args["slot_info"][slot].game}})
+
             ctx.server_data["ConnectionInfo"] = {
                 "slot_data": args["slot_data"], 
-                "player_names": ctx.player_names
+                "slot_info": slot_info
                 }
             handle_savedata(ctx)
             create_stage_order(ctx, args["slot_data"]["StageOrder"], args["slot_data"]["BossOrder"])
             write_server_packets(ctx, "ConnectionInfo")
             ctx.disable_steamworks()
         #write_connection_status(ctx, True)
-        run_game(ctx)
+        #run_game(ctx)
         ctx.server_data["CheckedLocations"] = args["checked_locations"]
         write_server_packets(ctx, "CheckedLocations")
     elif cmd == "ReceivedItems":
@@ -314,8 +330,8 @@ def handle_savedata(ctx: SKPDContext):
     except:
         print(logger.info("No existing savefile found! Creating new file..."))
     
-    if "__mod:Archipelago__" in savedata and "ap_session" in savedata["__mod:Archipelago__"]:
-        save_apsession = savedata["__mod:Archipelago__"]["ap_session"]
+    if f"__mod:{ctx.mod_name}__" in savedata and "ap_session" in savedata[f"__mod:{ctx.mod_name}__"] and savedata[f"__mod:{ctx.mod_name}__"]["ap_session"] != 0:
+        save_apsession = str(savedata[f"__mod:{ctx.mod_name}__"]["ap_session"])
         #if apsession changed copy specific bits of data over to seperate file
         if save_apsession != ctx.apsession:
             main_sdata: dict = savedata["0"]
@@ -326,15 +342,15 @@ def handle_savedata(ctx: SKPDContext):
                     "last_pindex3": main_sdata.get("last_pindex3"),
                     "percy_room": main_sdata.get("percy_room")
                 },
-                "__mod:Archipelago__": {}
+                f"__mod:{ctx.mod_name}__": {}
             }
             for i in range(13):
                 backup_savedata["0"][f"shortcut{i} unlock"] = main_sdata.get(f"shortcut{i} unlock")
-            for key in savedata["__mod:Archipelago__"].keys():
-                backup_savedata["__mod:Archipelago__"][key] = savedata["__mod:Archipelago__"][key]
+            for key in savedata[f"__mod:{ctx.mod_name}__"].keys():
+                backup_savedata[f"__mod:{ctx.mod_name}__"][key] = savedata[f"__mod:{ctx.mod_name}__"][key]
             with open(ctx.save_file+save_apsession+".json", "w") as file:
                 json.dump(backup_savedata, file)
-        #dont need to do anything if savefile is alreadxy prepared
+        #dont need to do anything if savefile is already prepared
         else:
             return
     #in this case the savedata is either a vanilla file or there's no savefile
@@ -357,13 +373,13 @@ def handle_savedata(ctx: SKPDContext):
         with open(ctx.save_file+ctx.apsession+".json", "r") as file:
             filestr = file.read()
         new_savedata: dict = json.loads(filestr)
-        for key in new_savedata["__mod:Archipelago__"].keys():
-            savedata["__mod:Archipelago__"][key] = new_savedata["__mod:Archipelago__"][key]
+        for key in new_savedata[f"__mod:{ctx.mod_name}__"].keys():
+            savedata[f"__mod:{ctx.mod_name}__"][key] = new_savedata[f"__mod:{ctx.mod_name}__"][key]
         for key in new_savedata["0"].keys():
             savedata["0"][key] = new_savedata["0"][key]
     #prepare empty savefile if current session doesn't have one yet
     else:
-        savedata["__mod:Archipelago__"] = {
+        savedata[f"__mod:{ctx.mod_name}__"] = {
             "ap_session": ctx.apsession
         }
         savedata["0"]["last_pindex3"] = ctx.char_id_map[ctx.server_data["ConnectionInfo"]["slot_data"]["StartingChar"]]
