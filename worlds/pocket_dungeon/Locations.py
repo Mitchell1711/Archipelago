@@ -45,21 +45,17 @@ def create_locations():
         "Propeller Knight Defeated":    SKPDLocationData(107, SKPDLocationCategory.Boss_Defeated, "Propeller Knight"),
         "Polar Knight Defeated":        SKPDLocationData(108, SKPDLocationCategory.Boss_Defeated, "Polar Knight"),
         "Prism Knight Defeated":        SKPDLocationData(109, SKPDLocationCategory.Boss_Defeated, "Prism Knight"),
-        "Puzzle Knight Defeated":       SKPDLocationData(110, SKPDLocationCategory.Boss_Defeated, "Puzzle Knight"),
-        "Enchantress Defeated":         SKPDLocationData(111, SKPDLocationCategory.Boss_Defeated, "Enchantress"),
+        "Puzzle Knight Defeated":       SKPDLocationData(110, SKPDLocationCategory.Boss_Defeated),
+        "Enchantress Defeated":         SKPDLocationData(111, SKPDLocationCategory.Boss_Defeated),
         "Black Knight Defeated":        SKPDLocationData(112, SKPDLocationCategory.Boss_Defeated, "Black Knight"),
         "Shovel Knight Defeated":       SKPDLocationData(113, SKPDLocationCategory.Boss_Defeated, "Shovel Knight"),
-        "Chester Defeated":             SKPDLocationData(114, SKPDLocationCategory.Boss_Defeated, "Chester"),
-        "Mr. Hat Defeated":             SKPDLocationData(115, SKPDLocationCategory.Boss_Defeated),
-        "Baz Defeated":                 SKPDLocationData(116, SKPDLocationCategory.Boss_Defeated),
-        "Reize Defeated":               SKPDLocationData(117, SKPDLocationCategory.Boss_Defeated),
-        "First Shrine":                 SKPDLocationData(118, SKPDLocationCategory.Shrine),
-        "Second Shrine":                SKPDLocationData(119, SKPDLocationCategory.Shrine),
-        "Third Shrine":                 SKPDLocationData(120, SKPDLocationCategory.Shrine),
-        "Fourth Shrine":                SKPDLocationData(121, SKPDLocationCategory.Shrine),
+        "First Shrine":                 SKPDLocationData(114, SKPDLocationCategory.Shrine),
+        "Second Shrine":                SKPDLocationData(115, SKPDLocationCategory.Shrine),
+        "Third Shrine":                 SKPDLocationData(116, SKPDLocationCategory.Shrine),
+        "Fourth Shrine":                SKPDLocationData(117, SKPDLocationCategory.Shrine),
     })
     
-    location_index = 122
+    location_index = 118
 
     def add_dungeon_item_locations(location: str, characters: list):
         nonlocal location_index

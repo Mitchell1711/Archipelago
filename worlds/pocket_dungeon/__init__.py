@@ -270,10 +270,11 @@ class SKPDWorld(World):
                     if not shuffled_hats:
                         shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
                         self.random.shuffle(shuffled_hats)
+                        for hat in shuffled_hats:
+                            if hat in self.options.excluded_hats:
+                                shuffled_hats.remove(hat)
 
                     hat_to_add = shuffled_hats.pop()
-                    while(hat_to_add in self.options.excluded_hats):
-                        hat_to_add = shuffled_hats.pop()
                     skpd_itempool.append(self.create_item(hat_to_add))
         
         #fill any possible open slots with 1000 gems
