@@ -201,7 +201,7 @@ class RandomizeBosses(Toggle):
     """
     display_name = "Randomize Bosses"
 
-class SideroomChecks(Toggle):
+class SideroomChecks(DefaultOnToggle):
     """
     Adds sideroom clears as locations
     """
