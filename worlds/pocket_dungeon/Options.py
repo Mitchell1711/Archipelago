@@ -164,7 +164,7 @@ class FillerWeights(OptionCounter):
         "1000 Gems": 40,
         "2500 Gems": 35,
         "5000 Gems": 20,
-        "Garbage": 25,
+        "Garbage": 20,
         "Hats": 40
     }
 
@@ -310,6 +310,7 @@ SKPD_option_presets: Dict[str, Dict[str, Any]] = {
             "Gem Chain": 1,
             "Gem Beet": 1
         },
+        "dungeon_item_amount": 1,
         "staring_relic_slot_amount": 0
     },
     "Surprise Legendary Quest": {
@@ -317,10 +318,23 @@ SKPD_option_presets: Dict[str, Dict[str, Any]] = {
             "1000 Gems": 40,
             "2500 Gems": 35,
             "5000 Gems": 20,
-            "Garbage": 25,
+            "Garbage": 20,
             "Legendary Gold Helm": 1
         },
         "hat_expiration_action": 0,
         "hat_stack_amount": 1
     },
+    "Quickplay": {
+        "total_characters": 20,
+        "camp_shop_starting_price": 5000,
+        "camp_shop_price_modifier": 1000,
+        "dungeon_item_amount": 2
+    },
+    "Maximum Checks": {
+        "total_characters": 100,
+        "excluded_characters": {},
+        "hub_shop_restock_count": 20,
+        "dungeon_item_amount": 4,
+        "staring_relic_slot_amount": 10
+    }
 }
