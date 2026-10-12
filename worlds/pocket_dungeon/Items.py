@@ -149,7 +149,7 @@ skpd_items: dict[str, SKPDItemData] = {
     "Pauper's Cap":             SKPDItemData(190, SKPDItemCategory.Hat, ItemClassification.trap, "small wallet"),
     "Herder's Hat":             SKPDItemData(191, SKPDItemCategory.Hat, ItemClassification.trap, "rewardless solo kills"),
     "Platter Hatter":           SKPDItemData(192, SKPDItemCategory.Hat, ItemClassification.filler, "turkey trays"),
-    "Troupple Crown":           SKPDItemData(193, SKPDItemCategory.Hat, ItemClassification.filler, "hp all"),
+    "Troupple Crown":           SKPDItemData(193, SKPDItemCategory.Hat, ItemClassification.trap, "hp all"),
     "Mining Helmet":            SKPDItemData(194, SKPDItemCategory.Hat, ItemClassification.trap, "hidden chestkey"),
     "Armorer's Bandana":        SKPDItemData(195, SKPDItemCategory.Hat, ItemClassification.filler, "weapon rain"),
     "Volatile Heart Hat":       SKPDItemData(196, SKPDItemCategory.Hat, ItemClassification.trap, "random hp"),
@@ -227,7 +227,7 @@ skpd_items: dict[str, SKPDItemData] = {
     "Inverted Chest Hat":       SKPDItemData(268, SKPDItemCategory.Hat, ItemClassification.trap, "buy weapons"),
     "Teleporter's Trapper":     SKPDItemData(269, SKPDItemCategory.Hat, ItemClassification.trap, "magic floors"),
     "Legendary Gold Helm":      SKPDItemData(270, SKPDItemCategory.Hat, ItemClassification.trap, "advanced mode"),
-    "Shuffler's Hat":           SKPDItemData(271, SKPDItemCategory.Hat, ItemClassification.trap, "hat shuffler"),
+    #"Shuffler's Hat":           SKPDItemData(271, SKPDItemCategory.Hat, ItemClassification.trap, "hat shuffler")
 
     # "Progressive Blade":        SKPDItemData(300, "Item", ItemClassification.progression), #blade can be upgraded to steel and hero blade
     # "Progressive Spear":        SKPDItemData(301, "Item", ItemClassification.progression), #spear can be upgraded to super spear
