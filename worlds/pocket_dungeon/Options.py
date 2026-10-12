@@ -351,5 +351,7 @@ SKPD_option_presets: Dict[str, Dict[str, Any]] = {
             "Present Hat": 10,
             "Bugle Hat": 10
         },
+        "hat_expiration_action": 1,
+        "hat_stack_amount": 2
     }
 }
