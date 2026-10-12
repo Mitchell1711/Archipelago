@@ -137,11 +137,10 @@ class SKPDWorld(World):
         self.base_starting_character = self.starting_character
 
         #remove random characters from the character list
-        char_amount = math.floor(len(self.characters) * (self.options.total_characters / 100))
+        char_amount = self.options.total_characters.value - 1
         if char_amount == 0:
             self.solo_run = True
-        to_remove = len(self.characters) - char_amount
-        for i in range(to_remove):
+        while(len(self.characters) > char_amount):
             index = self.random.randint(0, len(self.characters) - 1)
             self.characters.pop(index)
         self.characters.append(self.starting_character)

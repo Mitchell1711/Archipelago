@@ -67,13 +67,14 @@ class ExcludedCharacters(ItemSet):
 
 class TotalCharacters(Range):
     """
-    Cut out a percentage of playable characters from the pool at random, useful for shorter Archipelago sessions.
-    100 will include all characters, 0 will only add your starting character.
+    Adds a total of x amount of characters to the pool at random, useful for shorter Archipelago sessions.
+    21 tries to add every character to the pool, 1 will only add your starting character.
+    Characters set to excluded will still be ignored.
     """
     display_name = "Total Characters"
-    range_start = 0
-    range_end = 100
-    default = 50
+    range_start = 1
+    range_end = 21
+    default = 10
 
 class ShuffleRefractCharacters(DefaultOnToggle):
     """

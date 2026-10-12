@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 SKPD_option_presets: Dict[str, Dict[str, Any]] = {
     "Vanilla Flavor": {
-        "total_characters": 100,
+        "total_characters": 21,
         "progression_type": 1,
         "shuffle_relics": True,
         "early_meal_ticket": False,
@@ -38,13 +38,13 @@ SKPD_option_presets: Dict[str, Dict[str, Any]] = {
         "hat_stack_amount": 1
     },
     "Quickplay": {
-        "total_characters": 20,
+        "total_characters": 4,
         "camp_shop_starting_price": 5000,
         "camp_shop_price_modifier": 1000,
         "dungeon_item_amount": 3
     },
     "Maximum Checks": {
-        "total_characters": 100,
+        "total_characters": 21,
         "excluded_characters": {},
         "hub_shop_restock_count": 20,
         "dungeon_item_amount": 4,
