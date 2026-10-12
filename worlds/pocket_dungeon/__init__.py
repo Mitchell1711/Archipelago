@@ -4,7 +4,8 @@ from ..AutoWorld import World, WebWorld
 from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories, SKPDItemCategory
 from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
 from .Regions import create_regions
-from .Options import SKPDOptions, SKPD_option_groups, SKPD_option_presets
+from .Options import SKPDOptions, SKPD_option_groups
+from .Presets import SKPD_option_presets
 from .Rules import set_rules
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type
