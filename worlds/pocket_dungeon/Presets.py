@@ -56,13 +56,13 @@ SKPD_option_presets: Dict[str, Dict[str, Any]] = {
             "2500 Gems": 35,
             "5000 Gems": 20,
             "Garbage": 20,
-            "Connoisseur's Cap": 10,
-            "Fleeto Beret": 10,
-            "Turkey Toque": 10,
-            "Taming Topper": 10,
-            "Bohto Boater": 10,
-            "Present Hat": 10,
-            "Bugle Hat": 10
+            "Connoisseur's Cap": 5,
+            "Fleeto Beret": 5,
+            "Turkey Toque": 5,
+            "Taming Topper": 5,
+            "Bohto Boater": 5,
+            "Present Hat": 5,
+            "Bugle Hat": 5
         },
         "hat_expiration_action": 1,
         "hat_stack_amount": 2

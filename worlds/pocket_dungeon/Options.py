@@ -57,6 +57,7 @@ class StartingCharacterIsRefract(Toggle):
     Characters without a refract skill won't be affected.
     """
     display_name = "Use Refract Starting Character"
+    default = 'random'
 
 class ExcludedCharacters(ItemSet):
     """
@@ -124,7 +125,7 @@ class HatExpirationAction(Choice):
 
 class HatStackAmount(Range):
     """
-    The maximum amount of hats a player is able to have at a time.
+    The maximum amount of hats a player is able to have active at a time.
     """
     display_name = "Hat Stack Amount"
     range_start = 1
@@ -136,7 +137,7 @@ class ExcludedHats(ItemSet):
     Prevent these hats from being shuffled into the multiworld.
     """
     display_name = "Excluded Hats"
-    default = {"Shop Lock Shako"}
+    default = {}
 
 class RandomizeLevelOrder(Toggle):
     """
