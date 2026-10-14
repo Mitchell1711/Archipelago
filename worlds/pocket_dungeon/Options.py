@@ -237,6 +237,7 @@ class SKPDOptions(PerGameCommonOptions):
     starting_character_is_refract: StartingCharacterIsRefract
     excluded_characters: ExcludedCharacters
     total_characters: TotalCharacters
+    dungeon_item_amount: DungeonItemAmount
     hub_shop_restock_count: HubShopRestockCount
     progression_type: ProgressionType
     randomize_level_order: RandomizeLevelOrder
@@ -252,7 +253,6 @@ class SKPDOptions(PerGameCommonOptions):
     staring_relic_slot_amount: StartingRelicSlotAmount
     camp_shop_price_modifier: CampShopPriceModifier
     camp_shop_starting_price: CampShopStartingPrice
-    dungeon_item_amount: DungeonItemAmount
     
     start_inventory_from_pool: StartInventoryPool
 
