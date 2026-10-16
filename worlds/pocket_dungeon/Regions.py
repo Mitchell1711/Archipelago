@@ -65,7 +65,7 @@ def add_dungeon_locations(region: Region, player: int, characters: list[str], it
     for char in characters:
         if char not in refract_characters:
             for item in range(item_amount):
-                loc = f"{region} Item {item+1} - {char}"
+                loc = f"{region.name} Item {item+1} - {char}"
                 add_location(region, loc, player)
 
 def add_char_locations(region: Region, player: int, locations: list[str], characters: list[str]):
