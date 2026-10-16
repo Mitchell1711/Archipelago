@@ -154,6 +154,9 @@ base_savedata = {
         "cutscene_viewed_bad_ending" : 1,
         "cutscene_viewed_cloaked" : 1,
         "cutscene_viewed_prism" : 1,
-        "cutscene_viewed_good_ending" : 1
+        "cutscene_viewed_good_ending" : 1,
+        "chester hub blessing1" : -4,
+        "chester hub blessing2" : -4,
+        "chester hub blessing3" : -4,
     }
 }

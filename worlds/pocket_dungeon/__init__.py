@@ -8,7 +8,7 @@ from .Options import SKPDOptions, SKPD_option_groups
 from .Presets import SKPD_option_presets
 from .Rules import set_rules
 import math
-from worlds.LauncherComponents import Component, components, launch as launch_component, Type
+from worlds.LauncherComponents import Component, components, launch as launch_component, Type, icon_paths
 import json
 import settings
 from logging import info
@@ -19,7 +19,9 @@ def run_client(*args: str):
     from .PocketDungeonClient import launch
     launch_component(launch, name="SKPDClient", args=args)
 
-components.append(Component("Shovel Knight Pocket Dungeon Client", "SKPDClient", func=run_client, component_type=Type.CLIENT))
+components.append(Component("Shovel Knight Pocket Dungeon Client", "SKPDClient", func=run_client, component_type=Type.CLIENT, icon="pocket_dungeon"))
+
+icon_paths['pocket_dungeon'] = f"ap:{__name__}/icon.png"
 
 def data_path(file_name: str):
     import pkgutil
