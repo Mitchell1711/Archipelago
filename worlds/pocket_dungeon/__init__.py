@@ -347,7 +347,7 @@ class SKPDWorld(World):
             itemdata = skpd_items[item.name]
             #check if item is a relic
             if itemdata.category == SKPDItemCategory.Relic:
-                state.skpd_relic_quality[self.player] += itemdata.data * (self.options.relic_leniency.value / 10)
+                state.skpd_relic_quality[self.player] += itemdata.data
         return change
     
     def remove(self, state: CollectionState, item: Item) -> bool:
@@ -356,7 +356,7 @@ class SKPDWorld(World):
             itemdata = skpd_items[item.name]
             #check if item is a relic
             if itemdata.category == SKPDItemCategory.Relic:
-                state.skpd_relic_quality[self.player] -= itemdata.data * (self.options.relic_leniency.value / 10)
+                state.skpd_relic_quality[self.player] -= itemdata.data
         return change
 
 class SKPDState(LogicMixin):
