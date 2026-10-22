@@ -2247,12 +2247,27 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
             args["cmd"] = "Bounced"
             msg = ctx.dumper([args])
 
-            for bounceclient in ctx.endpoints:
-                if client.team == bounceclient.team and (ctx.games[bounceclient.slot] in games or
-                                                         set(bounceclient.tags) & tags or
-                                                         bounceclient.slot in slots):
-                    await ctx.send_encoded_msgs(bounceclient, msg)
-        
+            boolean_operator = args.get("operator", "legacy")
+
+            if boolean_operator == "legacy":
+                match_function = bounce_target.match_clients_legacy
+            elif boolean_operator == "or":
+                match_function = bounce_target.match_clients_or
+            elif boolean_operator == "and":
+                match_function = bounce_target.match_clients_and
+            else:
+                await ctx.send_msgs(client, [{
+                    'cmd': 'InvalidPacket', "type": "arguments",
+                    'text': f'Bounce: Unknown operator. Supported: legacy, or, and. Found: {operator}',
+                    'original_cmd': cmd
+                }])
+                return
+
+            for matching_client in match_function(ctx.endpoints):
+                await ctx.send_encoded_msgs(matching_client, msg)
+
+            return
+
         elif cmd == "Get":
             if "keys" not in args or type(args["keys"]) != list:
                 await ctx.send_msgs(client, [{'cmd': 'InvalidPacket', "type": "arguments",
