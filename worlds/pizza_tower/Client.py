@@ -53,8 +53,6 @@ class PTContext(SuperContext):
             "ClientPong",
             "ProxyDisconnect"
         ]
-        self.message_queue = []
-        self.is_processing_outgoing_messages = False
 
     async def server_auth(self, password_requested: bool = False):
         if password_requested and not self.password:
@@ -77,16 +75,7 @@ class PTContext(SuperContext):
         if DEBUG:
             logger.info(f"Outgoing message: {msgs}")
 
-        #queue so that packets sent in quick succession don't get lost
-        #special thanks to profdecube for looking into this issue and writing a fix for it
-        self.message_queue.append(msgs)
-        if not self.is_processing_outgoing_messages:            
-            self.is_processing_outgoing_messages = True
-            while(len(self.message_queue) > 0):
-                message_to_process = self.message_queue.pop(0)
-                await self.endpoint.socket.send(message_to_process)
-                await asyncio.sleep(0.1)
-            self.is_processing_outgoing_messages = False
+        await self.endpoint.socket.send(msgs)
         return True
 
     async def disconnect(self, allow_autoreconnect: bool = False):
@@ -279,9 +268,8 @@ async def proxy_loop(ctx: PTContext):
         while not ctx.exit_event.is_set():
             if not ctx.is_connected():
                 ctx.connected = False
-            if len(ctx.server_msgs) > 0:
-                for msg in ctx.server_msgs:
-                    await ctx.send_msgs_proxy(msg)
+            if not ctx.server_msgs:
+                await ctx.send_msgs_proxy(ctx.server_msgs)
 
                 ctx.server_msgs.clear()
             await asyncio.sleep(0.1)
