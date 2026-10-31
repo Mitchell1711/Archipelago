@@ -7,6 +7,7 @@ from .Regions import create_regions
 from .Options import SKPDOptions, SKPD_option_groups
 from .Presets import SKPD_option_presets
 from .Rules import set_rules
+from Options import OptionError
 import math
 from worlds.LauncherComponents import Component, components, launch as launch_component, Type, icon_paths
 import json
@@ -124,17 +125,18 @@ class SKPDWorld(World):
                         self.boss_table[i].append(self.bosses[slot_data["BossOrder"][i][ii]])
     
     def handle_playable_characters(self) -> None:
-        #prune excluded and starting character from list
         self.characters = get_item_from_category(SKPDItemCategory.Character)
         self.starting_character = self.options.starting_character.charlist[self.options.starting_character.value]
-        rerolled = False
-        while self.starting_character in self.options.excluded_characters:
-            self.starting_character = self.random.choice(self.options.starting_character.charlist)
-            rerolled = True
-        if rerolled:
-            info(f"{self.player_name}'s starting character was set to an excluded character, chose {self.starting_character} as starting character instead.")
+        #prune excluded characters from character list
         for char in self.options.excluded_characters:
             self.characters.remove(char)
+        #reroll starting character if it was excluded
+        if self.characters and self.starting_character not in self.characters:
+            self.starting_character = self.random.choice(self.characters)
+            info(f"{self.player_name}'s starting character was set to an excluded character, chose {self.starting_character} as starting character instead.")
+        #someone excluded every single character
+        elif not self.characters:
+            raise OptionError(f"{self.player_name} set every single character to excluded, unable to pick a valid starting character.")
         self.characters.remove(self.starting_character)
         self.base_starting_character = self.starting_character
 
@@ -258,26 +260,25 @@ class SKPDWorld(World):
         total_filler_weights = 0
         for filler in self.options.filler_weights:
             total_filler_weights += self.options.filler_weights[filler]
-        
-        for filler in self.options.filler_weights:
-            filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
-            if filler != "Hats":
-                for i in range(filler_to_place):
-                    skpd_itempool.append(self.create_item(filler))
-            else:
-                shuffled_hats = []
-                for i in range(filler_to_place):
-                    #get a list of all hats and shuffle it
-                    #we do this here in case the list goes empty and we need to refill it again
-                    if not shuffled_hats:
-                        shuffled_hats = get_item_from_category(SKPDItemCategory.Hat)
-                        self.random.shuffle(shuffled_hats)
-                        for hat in shuffled_hats:
-                            if hat in self.options.excluded_hats:
-                                shuffled_hats.remove(hat)
 
-                    hat_to_add = shuffled_hats.pop()
-                    skpd_itempool.append(self.create_item(hat_to_add))
+        if total_filler_weights != 0:
+            for filler in self.options.filler_weights:
+                filler_to_place = math.floor(total_filler * (self.options.filler_weights[filler] / total_filler_weights))
+                if filler != "Hats":
+                    for i in range(filler_to_place):
+                        skpd_itempool.append(self.create_item(filler))
+                else:
+                    shuffled_hats = []
+                    for i in range(filler_to_place):
+                        #get a list of all hats and shuffle it
+                        #we do this here in case the list goes empty and we need to refill it again
+                        if not shuffled_hats:
+                            shuffled_hats = [h for h in get_item_from_category(SKPDItemCategory.Hat) if h not in self.options.excluded_hats]
+
+                        hat_to_add = shuffled_hats.pop(self.random.randint(0, len(shuffled_hats) - 1))
+                        skpd_itempool.append(self.create_item(hat_to_add))
+        else:
+            info(f"{self.player_name} set all filler weights to 0, filling all open slots with 1000 gems instead.")
         
         #fill any possible open slots with 1000 gems
         for i in range(locations_to_fill - len(skpd_itempool)):

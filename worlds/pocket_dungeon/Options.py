@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from BaseClasses import PlandoOptions
 from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup, StartInventoryPool
+from worlds.AutoWorld import World
 
 class StartingCharacter(Choice):
     """
@@ -59,12 +61,13 @@ class StartingCharacterIsRefract(Toggle):
     display_name = "Use Refract Starting Character"
     default = 'random'
 
-class ExcludedCharacters(ItemSet):
+class ExcludedCharacters(OptionSet):
     """
     Prevent these characters and their related locations from being shuffled into the multiworld.
     """
     display_name = "Excluded Characters"
     default = {"Quandary Sage", "Spinwulf", "Schmutz", "Beefto"}
+    valid_keys = StartingCharacter.charlist
 
 class TotalCharacters(Range):
     """
