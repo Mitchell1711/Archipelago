@@ -141,12 +141,11 @@ class SKPDWorld(World):
         self.base_starting_character = self.starting_character
 
         #remove random characters from the character list
-        char_amount = self.options.total_characters.value - 1
-        if char_amount == 0:
-            self.solo_run = True
-        while(len(self.characters) > char_amount):
+        while(len(self.characters) > self.options.total_characters.value - 1):
             index = self.random.randint(0, len(self.characters) - 1)
             self.characters.pop(index)
+        if len(self.characters) == 0:
+            self.solo_run = True
         self.characters.append(self.starting_character)
         
         #add refract variants
