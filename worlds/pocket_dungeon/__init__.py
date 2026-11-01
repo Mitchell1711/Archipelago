@@ -76,7 +76,6 @@ class SKPDWorld(World):
     options: SKPDOptions
     settings: SKPDSettings
 
-    create_item_categories()
     create_locations()
     create_location_categories()
 

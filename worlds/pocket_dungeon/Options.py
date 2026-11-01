@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from BaseClasses import PlandoOptions
 from Options import Toggle, Range, DefaultOnToggle, PerGameCommonOptions, Choice, OptionSet, ItemSet, OptionCounter, OptionGroup, StartInventoryPool
 from worlds.AutoWorld import World
+from .Items import SKPDItemCategory, get_item_from_category, create_item_categories
+
+create_item_categories()
 
 class StartingCharacter(Choice):
     """
@@ -171,6 +174,7 @@ class FillerWeights(OptionCounter):
         "Garbage": 20,
         "Hats": 40
     }
+    valid_keys = ["Hats"] + get_item_from_category(SKPDItemCategory.Filler) + get_item_from_category(SKPDItemCategory.Hat)
 
 class RelicLeniency(Range):
     """
