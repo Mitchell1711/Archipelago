@@ -157,7 +157,7 @@ class SKPDWorld(World):
                 if refract_char in skpd_items:
                     refract_list.append(f"{char} B")
             self.characters += refract_list
-        if self.options.starting_character_is_refract:
+        if self.options.starting_character_is_refract.value:
             refract_char = f"{self.starting_character} B"
             if refract_char in skpd_items:
                 self.starting_character = refract_char
@@ -204,6 +204,16 @@ class SKPDWorld(World):
         }
         self.base_starting_character: str = ""
         self.solo_run = False
+
+        #starting character can't be a refract variant if they're not shuffled into the itempool
+        if self.options.shuffle_refract_characters.value == False and self.options.starting_character_is_refract.value:
+            self.options.starting_character_is_refract.value = False
+
+        #failsafe for extremely restrictive settings, just add some extra shop slots
+        if (self.options.total_characters.value == 1 and self.options.hub_shop_restock_count.value <= 5
+            and self.options.dungeon_item_amount.value == 1 and self.options.shuffle_relics.value):
+            info(f"Increasing {self.player_name}'s hub shop restock count as there are not enough locations.")
+            self.options.hub_shop_restock_count.value += 1
 
         self.handle_playable_characters()
         self.randomize_bosses()
@@ -253,6 +263,9 @@ class SKPDWorld(World):
                 self.push_precollected(self.create_item(relic))
         
         for i in range(self.options.staring_relic_slot_amount.value):
+            if locations_to_fill - len(skpd_itempool) <= 0:
+                info(f"Unable to place all of {self.player_name}'s Starting Relic Slots as there are not enough locations.")
+                break
             skpd_itempool.append(self.create_item("Starting Relic Slot"))
         
         #add filler to itempool
