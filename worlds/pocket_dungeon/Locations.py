@@ -85,3 +85,6 @@ def create_locations():
     for character in characters:
         skpd_locations.update({f"Run Complete - {character}": SKPDLocationData(location_index, SKPDLocationCategory.Run_Complete, character)})
         location_index += 1
+
+create_locations()
+create_location_categories()

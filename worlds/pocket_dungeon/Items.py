@@ -22,15 +22,6 @@ class SKPDItemData(NamedTuple):
     internal_name: str|None = None
     data: Any = None
 
-item_categories: dict[SKPDItemCategory, list[str]] = {}
-
-def create_item_categories():
-    for item in skpd_items:
-        category = skpd_items[item].category
-        if category not in item_categories:
-            item_categories[category] = list()
-        item_categories[category].append(item)
-
 def get_item_from_category(category: SKPDItemCategory) -> list[str]:
     return item_categories[category].copy()
 
@@ -250,5 +241,13 @@ skpd_items: dict[str, SKPDItemData] = {
     # "Portable Sploder X":       SKPDItemData(318, "Item", ItemClassification.progression, "exploder X"),
     # "Portable Sploder +":       SKPDItemData(319, "Item", ItemClassification.progression, "exploder T"),
 }
+
+item_categories: dict[SKPDItemCategory, list[str]] = {}
+
+for item in skpd_items:
+    category = skpd_items[item].category
+    if category not in item_categories:
+        item_categories[category] = list()
+    item_categories[category].append(item)
 
 item_dict = {name: data.code for name, data in skpd_items.items()}

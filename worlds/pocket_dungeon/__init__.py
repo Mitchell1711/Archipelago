@@ -1,8 +1,8 @@
 from typing import Any, Mapping
 from BaseClasses import Item, Tutorial, ItemClassification, CollectionState, MultiWorld
 from ..AutoWorld import World, WebWorld
-from .Items import SKPDItem, item_dict, get_item_from_category, create_item_categories, skpd_items, item_categories, SKPDItemCategory
-from .Locations import skpd_locations, create_locations, location_categories, create_location_categories
+from .Items import SKPDItem, item_dict, get_item_from_category, skpd_items, item_categories, SKPDItemCategory
+from .Locations import skpd_locations, location_categories
 from .Regions import create_regions
 from .Options import SKPDOptions, SKPD_option_groups
 from .Presets import SKPD_option_presets
@@ -75,9 +75,6 @@ class SKPDWorld(World):
     options_dataclass = SKPDOptions
     options: SKPDOptions
     settings: SKPDSettings
-
-    create_locations()
-    create_location_categories()
 
     item_name_to_id = item_dict
     location_name_to_id = {name: data.code for name, data in skpd_locations.items()}
